@@ -28,10 +28,10 @@ jobs:
     - name: Build
       run: |
         echo "Building for ${{ matrix.goos }}"
-        GOOS=${{ matrix.goos }} GOARCH=amd64 go build -v -o myapp-${{ matrix.goos }} ./...
+        GOOS=${{ matrix.goos }} GOARCH=amd64 go build -v -o gpt-cli-${{ matrix.goos }} ./...
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: myapp-${{ matrix.goos }}
-        path: ./myapp-${{ matrix.goos }}
+        name: gpt-cli-${{ matrix.goos }}
+        path: ./gpt-cli-${{ matrix.goos }}
