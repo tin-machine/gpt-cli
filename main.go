@@ -17,13 +17,13 @@ type PromptMapping struct {
 }
 
 func main() {
-        // Define the command line option
+        // コマンドラインオプションの設定
         promptOption := flag.String("o", "", "The option for the prompt")
         addMessageFile := flag.String("a", "", "The option for the prompt")
         flag.Parse()
         fmt.Printf("addMessageFile: %v\n", *addMessageFile)
 
-        // Read the yaml file
+        // config.yamlの読み込み
         yamlFile, err := ioutil.ReadFile("config.yaml")
         fmt.Println(string(yamlFile))
 
@@ -31,7 +31,7 @@ func main() {
                 fmt.Printf("yamlFile.Get err #%v ", err)
         }
 
-        // Parse the yaml file
+        // yamlのパース
         var promptMapping PromptMapping
         err = yaml.Unmarshal(yamlFile, &promptMapping)
         if err != nil {
@@ -41,7 +41,7 @@ func main() {
 
         fmt.Printf("Prompt map: %v\n", promptMapping)
 
-        // Get the prompt from the config based on the option
+        // ベースとなるpromptの読み込み
         prompt, ok := promptMapping.Prompts[*promptOption]
         if !ok {
                 fmt.Printf("Prompt option %s is not defined in the config file", *promptOption)
@@ -73,7 +73,7 @@ func main() {
         // Output the result
         fmt.Println(resp.Choices[0].Message.Content)
 
-        // Save the conversation state to a directory named with Unix time
+        // ログ用ディレクトリをunix timeで作成
         dirName := fmt.Sprintf("%v", time.Now().Unix())
         err = os.Mkdir(dirName, 0755)
         if err != nil {
@@ -81,7 +81,7 @@ func main() {
                 return
         }
 
-        // Write the conversation to a file in the directory
+        // ログディレクトリに会話を保存
         conversationFile := fmt.Sprintf("%s/conversation.txt", dirName)
         err = ioutil.WriteFile(conversationFile, []byte(resp.Choices[0].Message.Content), 0644)
         if err != nil {
