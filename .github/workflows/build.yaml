@@ -12,7 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [linux, darwin]
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: darwin
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
     steps:
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
@@ -27,11 +33,11 @@ jobs:
 
     - name: Build
       run: |
-        echo "Building for ${{ matrix.goos }}"
-        GOOS=${{ matrix.goos }} GOARCH=amd64 go build -v -o gpt-cli-${{ matrix.goos }} ./...
+        echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}"
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -o gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: gpt-cli-${{ matrix.goos }}
-        path: ./gpt-cli-${{ matrix.goos }}
+        name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: ./gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
