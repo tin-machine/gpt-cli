@@ -48,52 +48,51 @@ jobs:
 
     - name: Create or Update Release
       id: create_release
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const { Octokit } = require("@octokit/rest");
-          const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+      run: |
+        # Install octokit
+        npm install @octokit/rest
 
-          async function createOrUpdateRelease() {
-            try {
-              const release = await octokit.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: '${{ github.ref }}',
-              });
+        # Create or update the release
+        node <<EOF
+        const { Octokit } = require("@octokit/rest");
+        const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-              // Update the existing release
-              const updatedRelease = await octokit.repos.updateRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: release.data.id,
-                tag_name: '${{ github.ref }}',
-                name: 'Release ${{ github.ref }}',
+        (async () => {
+          try {
+            const release = await octokit.repos.getReleaseByTag({
+              owner: process.env.GITHUB_REPOSITORY_OWNER,
+              repo: process.env.GITHUB_REPOSITORY.split('/')[1],
+              tag: process.env.GITHUB_REF.replace('refs/tags/', ''),
+            });
+
+            // Update the existing release
+            await octokit.repos.updateRelease({
+              owner: process.env.GITHUB_REPOSITORY_OWNER,
+              repo: process.env.GITHUB_REPOSITORY.split('/')[1],
+              release_id: release.data.id,
+              tag_name: process.env.GITHUB_REF.replace('refs/tags/', ''),
+              name: 'Release ' + process.env.GITHUB_REF.replace('refs/tags/', ''),
+              draft: false,
+              prerelease: false,
+            });
+
+          } catch (error) {
+            if (error.status === 404) {
+              // Create a new release if not found
+              await octokit.repos.createRelease({
+                owner: process.env.GITHUB_REPOSITORY_OWNER,
+                repo: process.env.GITHUB_REPOSITORY.split('/')[1],
+                tag_name: process.env.GITHUB_REF.replace('refs/tags/', ''),
+                name: 'Release ' + process.env.GITHUB_REF.replace('refs/tags/', ''),
                 draft: false,
                 prerelease: false,
               });
-
-              return updatedRelease.data.upload_url;
-            } catch (error) {
-              if (error.status === 404) {
-                // Create a new release if not found
-                const newRelease = await octokit.repos.createRelease({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  tag_name: '${{ github.ref }}',
-                  name: 'Release ${{ github.ref }}',
-                  draft: false,
-                  prerelease: false,
-                });
-
-                return newRelease.data.upload_url;
-              } else {
-                throw error;
-              }
+            } else {
+              throw error;
             }
           }
-
-          return createOrUpdateRelease();
+        })();
+        EOF
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
