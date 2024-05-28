@@ -44,57 +44,19 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
-        path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goos }}
 
-    - name: Create or Update Release
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
       id: create_release
-      run: |
-        # Install octokit
-        npm install @octokit/rest
-
-        # Create or update the release
-        node <<EOF
-        const { Octokit } = require("@octokit/rest");
-        const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-
-        (async () => {
-          try {
-            const release = await octokit.repos.getReleaseByTag({
-              owner: process.env.GITHUB_REPOSITORY_OWNER,
-              repo: process.env.GITHUB_REPOSITORY.split('/')[1],
-              tag: process.env.GITHUB_REF.replace('refs/tags/', ''),
-            });
-
-            // Update the existing release
-            await octokit.repos.updateRelease({
-              owner: process.env.GITHUB_REPOSITORY_OWNER,
-              repo: process.env.GITHUB_REPOSITORY.split('/')[1],
-              release_id: release.data.id,
-              tag_name: process.env.GITHUB_REF.replace('refs/tags/', ''),
-              name: 'Release ' + process.env.GITHUB_REF.replace('refs/tags/', ''),
-              draft: false,
-              prerelease: false,
-            });
-
-          } catch (error) {
-            if (error.status === 404) {
-              // Create a new release if not found
-              await octokit.repos.createRelease({
-                owner: process.env.GITHUB_REPOSITORY_OWNER,
-                repo: process.env.GITHUB_REPOSITORY.split('/')[1],
-                tag_name: process.env.GITHUB_REF.replace('refs/tags/', ''),
-                name: 'Release ' + process.env.GITHUB_REF.replace('refs/tags/', ''),
-                draft: false,
-                prerelease: false,
-              });
-            } else {
-              throw error;
-            }
-          }
-        })();
-        EOF
+      uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
 
     - name: Upload Release Asset
       if: startsWith(github.ref, 'refs/tags/')
