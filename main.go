@@ -18,14 +18,24 @@ type PromptMapping struct {
 
 func main() {
         // コマンドラインオプションの設定
-        promptOption := flag.String("o", "", "The option for the prompt")
-        addMessageFile := flag.String("a", "", "The option for the prompt")
+        promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
+        addMessageFile := flag.String("m", "", "追加するメッセージをファイルで指定")
+        outputFile := flag.String("o", "", "出力するファイルを指定")
+        debug := flag.Bool("d", false, "デバッグモードを有効にする")
         flag.Parse()
-        fmt.Printf("addMessageFile: %v\n", *addMessageFile)
+
+        // デバッグメッセージの関数
+        debugPrintf := func(format string, args ...interface{}) {
+                if *debug {
+                        fmt.Printf(format, args...)
+                }
+        }
+
+        debugPrintf("addMessageFile: %v\n", *addMessageFile)
 
         // config.yamlの読み込み
         yamlFile, err := ioutil.ReadFile("config.yaml")
-        fmt.Println(string(yamlFile))
+        debugPrintf("config.yaml content:\n%s\n", string(yamlFile))
 
         if err != nil {
                 fmt.Printf("yamlFile.Get err #%v ", err)
@@ -38,8 +48,7 @@ func main() {
                 fmt.Printf("Unmarshal: %v", err)
         }
 
-
-        fmt.Printf("Prompt map: %v\n", promptMapping)
+        debugPrintf("Prompt map: %v\n", promptMapping)
 
         // ベースとなるpromptの読み込み
         prompt, ok := promptMapping.Prompts[*promptOption]
@@ -49,13 +58,17 @@ func main() {
         }
 
         addMessage, err := ioutil.ReadFile(*addMessageFile)
+        if err != nil {
+                fmt.Printf("Failed to read additional message file: %v\n", err)
+                return
+        }
         prompt = prompt + string(addMessage)
 
         client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
         resp, err := client.CreateChatCompletion(
                 context.Background(),
                 openai.ChatCompletionRequest{
-                        Model: openai.GPT3Dot5Turbo, // Change this to GPT4 as per your requirement
+                        Model: openai.GPT4, // Change this to GPT4 as per your requirement
                         Messages: []openai.ChatCompletionMessage{
                                 {
                                         Role:    openai.ChatMessageRoleUser,
@@ -70,20 +83,26 @@ func main() {
                 return
         }
 
-        // Output the result
-        fmt.Println(resp.Choices[0].Message.Content)
+        // 結果のプリント
+        debugPrintf("Prompt map: %v\n", resp.Choices[0].Message.Content)
 
-        // ログ用ディレクトリをunix timeで作成
-        dirName := fmt.Sprintf("%v", time.Now().Unix())
-        err = os.Mkdir(dirName, 0755)
-        if err != nil {
-                fmt.Printf("Failed to create directory: %v\n", err)
-                return
+        // 保存ファイル名の指定がある場合、それを使用
+        var outputFileName string
+        if *outputFile != "" {
+                outputFileName = *outputFile
+        } else {
+                // 指定がない場合はunix timeでディレクトリを作成
+                dirName := fmt.Sprintf("%v", time.Now().Unix())
+                err = os.Mkdir(dirName, 0755)
+                if err != nil {
+                        fmt.Printf("Failed to create directory: %v\n", err)
+                        return
+                }
+                outputFileName = fmt.Sprintf("%s/conversation.txt", dirName)
         }
 
-        // ログディレクトリに会話を保存
-        conversationFile := fmt.Sprintf("%s/conversation.txt", dirName)
-        err = ioutil.WriteFile(conversationFile, []byte(resp.Choices[0].Message.Content), 0644)
+        // 指定されたファイル名またはデフォルトのファイル名で会話を保存
+        err = ioutil.WriteFile(outputFileName, []byte(resp.Choices[0].Message.Content), 0644)
         if err != nil {
                 fmt.Printf("Failed to write conversation to file: %v\n", err)
                 return
