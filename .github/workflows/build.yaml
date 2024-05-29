@@ -63,6 +63,9 @@ jobs:
         draft: false
         prerelease: false
 
+    - name: Upload Release URL
+      run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
+
   upload-release:
     needs: [create-release]
     runs-on: ubuntu-latest
@@ -78,12 +81,11 @@ jobs:
 
     steps:
     - name: Upload Release Asset
-      if: steps.create_release.outputs.upload_url != ''
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
         asset_path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         asset_name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         asset_content_type: application/octet-stream
