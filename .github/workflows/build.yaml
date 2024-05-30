@@ -66,7 +66,7 @@ jobs:
         path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
 
     - run: |
-        ls -la
+        ls -la && ls -la build/
 
     - name: Upload Release Asset
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -74,7 +74,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: $upload_url
+        upload_url: ${{ upload_url }}
         asset_path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         asset_name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         asset_content_type: application/octet-stream
