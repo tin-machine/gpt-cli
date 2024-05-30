@@ -80,6 +80,8 @@ jobs:
             goarch: arm64
 
     steps:
+    - run: |
+      ls -la build/
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
