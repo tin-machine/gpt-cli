@@ -81,7 +81,7 @@ jobs:
 
     steps:
     - run: |
-        ls -la build/
+        ls -la
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
