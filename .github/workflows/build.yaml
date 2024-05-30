@@ -24,9 +24,10 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-
-          # - name: Upload Release URL
-          #   run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+    - name: Upload Release URL
+      run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}"
+    - name: need create-release outputs value
+      run: echo ${{ needs.create-release.outputs.upload_url }}
 
   build:
     runs-on: ubuntu-latest
