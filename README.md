@@ -3,11 +3,18 @@
 ChatGPTに度々問い合わせを行っているのですが、
 viで書いたテキストを貼り付ける事が多いので、CLIから問い合わせできたら楽だな、という発想のコマンドです。
 
+# インストール
+
+```
+go install github.com/tin-machine/gpt-cli@latest
+```
+
 # 使い方
 
 ```
-gpt-cli-linux-arm64 -p prompt1 -m add-text.txt -o output.txt -d
+gpt-cli -p prompt1 -m add-text.txt -o output.txt -d
 ```
+
 # オプション
 
 取り得るオプションですが
