@@ -6,14 +6,15 @@ viで書いたテキストを貼り付ける事が多いので、CLIから問い
 # 使い方
 
 ```
-gpt-cli-linux-arm64 -o prompt1 -a file
+gpt-cli-linux-arm64 -p prompt1 -m add-text.txt -o output.txt -d
 ```
-
 # オプション
 
 取り得るオプションですが
--o: config.yaml内でベースとなる文字列を選択
--a: 追加する文章へのパスを指定します。
+-p: config.yaml内でベースとなるプロンプトを選択
+-m: 追加する文章へのパスを指定します。
+-o: 出力するファイル名
+-d: デバックモード
 
 # config.yamlのサンプル
 
