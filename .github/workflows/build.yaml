@@ -10,8 +10,6 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - name: Create Release
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -27,7 +25,9 @@ jobs:
     - name: Upload Release URL
       run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}"
     - name: need create-release outputs value
-      run: echo ${{ needs.create-release.outputs.upload_url }}
+      run: echo ${{ steps.create-release.outputs.upload_url }}
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
 
   build:
     runs-on: ubuntu-latest
