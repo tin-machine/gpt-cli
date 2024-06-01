@@ -1,4 +1,4 @@
-module gpt-cli
+module github.com/tin-machine/gpt-cli
 
 go 1.18
 
