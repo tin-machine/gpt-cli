@@ -116,7 +116,7 @@ func main() {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:    openai.GPT4, // Change this to GPT4 as per your requirement
+			Model:    openai.GPT4o, // Change this to GPT4 as per your requirement
 			Messages: messages,
 		},
 	)
