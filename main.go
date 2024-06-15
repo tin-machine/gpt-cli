@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"flag"
 	"fmt"
-	openai "github.com/sashabaranov/go-openai"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"time"
+
+	openai "github.com/sashabaranov/go-openai"
+	"gopkg.in/yaml.v2"
 )
 
 // PromptMapping is a struct to hold the yaml configuration
@@ -16,11 +18,28 @@ type PromptMapping struct {
 	Prompts map[string]string `yaml:"prompts"`
 }
 
+// Function to convert image to base64
+func imageToBase64(imagePath string) (string, error) {
+	file, err := os.Open(imagePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	fileInfo, _ := file.Stat()
+	var size = fileInfo.Size()
+	buf := make([]byte, size)
+	file.Read(buf)
+
+	return base64.StdEncoding.EncodeToString(buf), nil
+}
+
 func main() {
 	// コマンドラインオプションの設定
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
 	addMessageFile := flag.String("m", "", "追加するメッセージをファイルで指定")
 	outputFile := flag.String("o", "", "出力するファイルを指定")
+	imageFiles := flag.String("images", "", "カンマ区切りの画像ファイルのリスト")
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
 	flag.Parse()
 
@@ -64,17 +83,41 @@ func main() {
 	}
 	prompt = prompt + string(addMessage)
 
+	// 画像ファイルをbase64に変換
+	imageList := []string{}
+	if *imageFiles != "" {
+		imagePaths := strings.Split(*imageFiles, ",")
+		for _, imagePath := range imagePaths {
+			base64Image, err := imageToBase64(imagePath)
+			if err != nil {
+				fmt.Printf("Failed to convert image to base64: %v\n", err)
+				return
+			}
+			imageList = append(imageList, base64Image)
+		}
+	}
+
+	// メッセージの作成
+	messages := []openai.ChatCompletionMessage{
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: prompt,
+		},
+	}
+
+	for _, base64Image := range imageList {
+		messages = append(messages, openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleUser,
+			Content: fmt.Sprintf("![image](data:image/png;base64,%s)", base64Image),
+		})
+	}
+
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT4, // Change this to GPT4 as per your requirement
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: prompt,
-				},
-			},
+			Model:    openai.GPT4, // Change this to GPT4 as per your requirement
+			Messages: messages,
 		},
 	)
 
