@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -113,6 +114,14 @@ func main() {
 			Content: fmt.Sprintf("![image](data:image/png;base64,%s)", base64Image),
 		})
 	}
+
+	// メッセージの内容をJSON形式でダンプ
+	messagesJSON, err := json.MarshalIndent(messages, "", "  ")
+	if err != nil {
+		fmt.Printf("Failed to marshal messages: %v\n", err)
+		return
+	}
+	fmt.Printf("Messages: %s\n", string(messagesJSON))
 
 	// カスタムHTTPクライアントの作成
 	httpClient := &http.Client{
