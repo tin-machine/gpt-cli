@@ -123,9 +123,7 @@ func main() {
 	// NewClientWithConfig(config)の形で利用する
 	// https://pkg.go.dev/github.com/sashabaranov/go-openai#ClientConfig
 	config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
-	config.HTTPClient = &http.Client{
-		HTTPClient: httpClient,
-	}
+	config.HTTPClient = httpClient
 	//	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	// OpenAIクライアントの作成
 	client := openai.NewClientWithConfig(config)
