@@ -119,12 +119,17 @@ func main() {
 		Timeout: 60 * time.Second, // タイムアウトを60秒に設定
 	}
 
-	// OpenAIクライアントの作成
-	client := openai.NewClientWithConfig(openai.DefaultConfig(os.Getenv("OPENAI_API_KEY")), openai.Config{
+	// タイムアウトを伸ばしたHTTPクライアントを使うため
+	// NewClientWithConfig(config)の形で利用する
+	// https://pkg.go.dev/github.com/sashabaranov/go-openai#ClientConfig
+	config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
+	config.HTTPClient = &http.Client{
 		HTTPClient: httpClient,
-	})
-
+	}
 	//	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	// OpenAIクライアントの作成
+	client := openai.NewClientWithConfig(config)
+
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
