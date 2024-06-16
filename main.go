@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -113,7 +114,17 @@ func main() {
 		})
 	}
 
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	// カスタムHTTPクライアントの作成
+	httpClient := &http.Client{
+		Timeout: 60 * time.Second, // タイムアウトを60秒に設定
+	}
+
+	// OpenAIクライアントの作成
+	client := openai.NewClientWithConfig(openai.DefaultConfig(os.Getenv("OPENAI_API_KEY")), openai.Config{
+		HTTPClient: httpClient,
+	})
+
+	//	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
