@@ -16,6 +16,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// version is set via ldflags at build time
+var version = "development"
+
 // PromptMapping is a struct to hold the yaml configuration
 type PromptMapping struct {
 	Prompts map[string]string `yaml:"prompts"`
