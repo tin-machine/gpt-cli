@@ -57,7 +57,8 @@ jobs:
     - name: Build
       run: |
         echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}"
-        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -o build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
+        VERSION=$(git describe --tags --abbrev=0)
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X main.version=${VERSION}" -v -o build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
 
     - name: Run tests
       run: go test -v ./...

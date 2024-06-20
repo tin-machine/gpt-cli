@@ -44,7 +44,14 @@ func main() {
 	outputFile := flag.String("o", "", "出力するファイルを指定")
 	imageFiles := flag.String("images", "", "カンマ区切りの画像ファイルのリスト")
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
+	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	flag.Parse()
+
+	// バージョン情報の表示
+	if *showVersion {
+		fmt.Printf("Version: %s\n", version)
+		return
+	}
 
 	// デバッグメッセージの関数
 	debugPrintf := func(format string, args ...interface{}) {
@@ -108,6 +115,7 @@ func main() {
 		},
 	}
 
+	// 添付ファイルがあればmessagesに追加
 	for _, base64Image := range imageList {
 		messages = append(messages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
