@@ -67,7 +67,7 @@ jobs:
     - name: Build
       run: |
         echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}"
-        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X main.version=${{ env.VERSION }}" -v -o build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X main.Version=${{ env.VERSION }}" -v -o build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
 
     - name: Run tests
       run: go test -v ./...
@@ -90,4 +90,3 @@ jobs:
         asset_path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         asset_name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         asset_content_type: application/octet-stream
-
