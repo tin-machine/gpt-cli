@@ -52,7 +52,7 @@ func main() {
 
 	// バージョン情報の表示
 	if *showVersion {
-		fmt.Printf("Version: %s\n", version)
+		fmt.Printf("Version: %s\n", Version)
 		return
 	}
 
