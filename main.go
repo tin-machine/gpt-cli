@@ -17,7 +17,7 @@ import (
 )
 
 // version is set via ldflags at build time
-var Version string
+var Version = "development"
 
 // PromptMapping is a struct to hold the yaml configuration
 type PromptMapping struct {
@@ -62,6 +62,8 @@ func main() {
 			fmt.Printf(format, args...)
 		}
 	}
+
+	debugPrintf("Version: %s\n", Version)
 
 	debugPrintf("addMessageFile: %v\n", *addMessageFile)
 
