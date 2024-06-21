@@ -17,7 +17,7 @@ import (
 )
 
 // version is set via ldflags at build time
-var Version = "development"
+var Version string
 
 // PromptMapping is a struct to hold the yaml configuration
 type PromptMapping struct {
