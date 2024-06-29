@@ -2,189 +2,94 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	openai "github.com/sashabaranov/go-openai"
-	"gopkg.in/yaml.v2"
 )
 
-// version is set via ldflags at build time
-var Version = "development"
-
-// PromptMapping is a struct to hold the yaml configuration
-type PromptMapping struct {
-	Prompts map[string]string `yaml:"prompts"`
-}
-
-// Function to convert image to base64
-func imageToBase64(imagePath string) (string, error) {
-	file, err := os.Open(imagePath)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	fileInfo, _ := file.Stat()
-	var size = fileInfo.Size()
-	buf := make([]byte, size)
-	file.Read(buf)
-
-	return base64.StdEncoding.EncodeToString(buf), nil
-}
+var Version string
 
 func main() {
-	// コマンドラインオプションの設定
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
-	addMessageFile := flag.String("m", "", "追加するメッセージをファイルで指定")
 	outputFile := flag.String("o", "", "出力するファイルを指定")
-	imageFiles := flag.String("images", "", "カンマ区切りの画像ファイルのリスト")
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	flag.Parse()
 
-	// バージョン情報の表示
 	if *showVersion {
 		fmt.Printf("Version: %s\n", Version)
 		return
 	}
 
-	// デバッグメッセージの関数
 	debugPrintf := func(format string, args ...interface{}) {
 		if *debug {
-			fmt.Printf(format, args...)
+			log.Printf(format, args...)
 		}
 	}
 
+	log.SetOutput(os.Stderr)
 	debugPrintf("Version: %s\n", Version)
 
-	debugPrintf("addMessageFile: %v\n", *addMessageFile)
-
-	// config.yamlの読み込み
-	yamlFile, err := ioutil.ReadFile("config.yaml")
-	debugPrintf("config.yaml content:\n%s\n", string(yamlFile))
-
+	config, err := LoadConfig("config.yaml")
 	if err != nil {
-		fmt.Printf("yamlFile.Get err #%v ", err)
+		log.Fatalf("Failed to read config.yaml: %v", err)
 	}
 
-	// yamlのパース
-	var promptMapping PromptMapping
-	err = yaml.Unmarshal(yamlFile, &promptMapping)
-	if err != nil {
-		fmt.Printf("Unmarshal: %v", err)
-	}
+	debugPrintf("Config: %v\n", config)
 
-	debugPrintf("Prompt map: %v\n", promptMapping)
-
-	// ベースとなるpromptの読み込み
-	prompt, ok := promptMapping.Prompts[*promptOption]
+	promptConfig, ok := config.Prompts[*promptOption]
 	if !ok {
-		fmt.Printf("Prompt option %s is not defined in the config file", *promptOption)
-		return
+		log.Fatalf("Prompt option %s is not defined in the config file", *promptOption)
 	}
 
-	addMessage, err := ioutil.ReadFile(*addMessageFile)
+	debugPrintf("Prompt config: %v\n", promptConfig)
+
+	messages, err := CreateMessages(promptConfig)
 	if err != nil {
-		fmt.Printf("Failed to read additional message file: %v\n", err)
-		return
-	}
-	prompt = prompt + string(addMessage)
-
-	// 画像ファイルをbase64に変換
-	imageList := []string{}
-	if *imageFiles != "" {
-		imagePaths := strings.Split(*imageFiles, ",")
-		for _, imagePath := range imagePaths {
-			base64Image, err := imageToBase64(imagePath)
-			if err != nil {
-				fmt.Printf("Failed to convert image to base64: %v\n", err)
-				return
-			}
-			imageList = append(imageList, base64Image)
-		}
+		log.Fatalf("Failed to create messages: %v", err)
 	}
 
-	// メッセージの作成
-	messages := []openai.ChatCompletionMessage{
-		{
-			Role:    openai.ChatMessageRoleUser,
-			Content: prompt,
-		},
-	}
-
-	// 添付ファイルがあればmessagesに追加
-	for _, base64Image := range imageList {
-		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    openai.ChatMessageRoleUser,
-			Content: fmt.Sprintf("![image](data:image/png;base64,%s)", base64Image),
-		})
-	}
-
-	// メッセージの内容をJSON形式でダンプ
-	messagesJSON, err := json.MarshalIndent(messages, "", "  ")
-	if err != nil {
-		fmt.Printf("Failed to marshal messages: %v\n", err)
-		return
-	}
-	fmt.Printf("Messages: %s\n", string(messagesJSON))
-
-	// カスタムHTTPクライアントの作成
 	httpClient := &http.Client{
-		Timeout: 60 * time.Second, // タイムアウトを60秒に設定
+		Timeout: 60 * time.Second,
 	}
 
-	// タイムアウトを伸ばしたHTTPクライアントを使うため
-	// NewClientWithConfig(config)の形で利用する
-	// https://pkg.go.dev/github.com/sashabaranov/go-openai#ClientConfig
-	config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
-	config.HTTPClient = httpClient
-	//	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-	// OpenAIクライアントの作成
-	client := openai.NewClientWithConfig(config)
+	openaiConfig := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
+	openaiConfig.HTTPClient = httpClient
+	client := openai.NewClientWithConfig(openaiConfig)
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:    openai.GPT4o, // Change this to GPT4 as per your requirement
+			Model:    openai.GPT4o,
 			Messages: messages,
 		},
 	)
 
 	if err != nil {
-		fmt.Printf("ChatCompletion error: %v\n", err)
-		return
+		log.Fatalf("ChatCompletion error: %v", err)
 	}
 
-	// 結果のプリント
-	debugPrintf("Prompt map: %v\n", resp.Choices[0].Message.Content)
+	debugPrintf("Response: %v\n", resp.Choices[0].Message.Content)
 
-	// 保存ファイル名の指定がある場合、それを使用
 	var outputFileName string
 	if *outputFile != "" {
 		outputFileName = *outputFile
 	} else {
-		// 指定がない場合はunix timeでディレクトリを作成
 		dirName := fmt.Sprintf("%v", time.Now().Unix())
 		err = os.Mkdir(dirName, 0755)
 		if err != nil {
-			fmt.Printf("Failed to create directory: %v\n", err)
-			return
+			log.Fatalf("Failed to create directory: %v\n", err)
 		}
 		outputFileName = fmt.Sprintf("%s/conversation.txt", dirName)
 	}
 
-	// 指定されたファイル名またはデフォルトのファイル名で会話を保存
-	err = ioutil.WriteFile(outputFileName, []byte(resp.Choices[0].Message.Content), 0644)
+	err = SaveConversation(outputFileName, resp.Choices[0].Message.Content)
 	if err != nil {
-		fmt.Printf("Failed to write conversation to file: %v\n", err)
-		return
+		log.Fatalf("Failed to write conversation to file: %v\n", err)
 	}
 }
