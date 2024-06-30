@@ -21,7 +21,7 @@ func CreateMessages(promptConfig Prompt) ([]openai.ChatCompletionMessage, error)
 	for _, attachmentPath := range promptConfig.Attachments {
 		base64Image, mimeType, err := imageToBase64(attachmentPath)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to convert image to base64: %v", err)
+			return nil, fmt.Errorf("failed to convert image to base64: %v", err)
 		}
 		messages = append(messages, openai.ChatCompletionMessage{
 			Role: openai.ChatMessageRoleUser,

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -18,7 +18,7 @@ type Config struct {
 
 func LoadConfig(filePath string) (Config, error) {
 	var config Config
-	yamlFile, err := ioutil.ReadFile(filePath)
+	yamlFile, err := os.ReadFile(filePath)
 	if err != nil {
 		return config, err
 	}
@@ -32,5 +32,5 @@ func LoadConfig(filePath string) (Config, error) {
 }
 
 func SaveConversation(filePath string, content string) error {
-	return ioutil.WriteFile(filePath, []byte(content), 0644)
+	return os.WriteFile(filePath, []byte(content), 0644)
 }
