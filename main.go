@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+  "strings"
 	"time"
 
 	openai "github.com/sashabaranov/go-openai"
@@ -17,6 +18,9 @@ var Version string
 func main() {
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
 	outputFile := flag.String("o", "", "出力するファイルを指定")
+	systemMessage := flag.String("s", "", "Systemのメッセージを変更")
+	userMessage := flag.String("u", "", "Userのメッセージを変更")
+	imageList := flag.String("i", "", "画像ファイルをカンマ区切りで")
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	flag.Parse()
@@ -40,11 +44,27 @@ func main() {
 		log.Fatalf("Failed to read config.yaml: %v", err)
 	}
 
+
 	debugPrintf("Config: %v\n", config)
 
 	promptConfig, ok := config.Prompts[*promptOption]
 	if !ok {
 		log.Fatalf("Prompt option %s is not defined in the config file", *promptOption)
+	}
+
+	// Systemのメッセージをコマンドラインのものに修正
+	if *systemMessage != "" {
+		promptConfig.System = *systemMessage
+	}
+
+	// Userのメッセージをコマンドラインのものに修正
+	if *userMessage != "" {
+		promptConfig.User = *userMessage
+	}
+
+	// カンマで文字列を分割
+	if *imageList != "" {
+		promptConfig.Attachments = strings.Split(*imageList, ",")
 	}
 
 	debugPrintf("Prompt config: %v\n", promptConfig)
@@ -62,10 +82,16 @@ func main() {
 	openaiConfig.HTTPClient = httpClient
 	client := openai.NewClientWithConfig(openaiConfig)
 
+	// https://github.com/sashabaranov/go-openai/blob/03851d20327b7df5358ff9fb0ac96f476be1875a/completion.go#L25
+	// デフォルトのモデルは gpt-4o とする
+	if promptConfig.Model == "" {
+      promptConfig.Model = "gpt-4o"
+  }
+
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:    openai.GPT4o,
+			Model:    promptConfig.Model,
 			Messages: messages,
 		},
 	)

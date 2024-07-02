@@ -7,17 +7,39 @@ import (
 )
 
 func CreateMessages(promptConfig Prompt) ([]openai.ChatCompletionMessage, error) {
-	messages := []openai.ChatCompletionMessage{
-		{
-			Role:    openai.ChatMessageRoleSystem,
-			Content: promptConfig.System,
-		},
-		{
-			Role:    openai.ChatMessageRoleUser,
-			Content: promptConfig.User,
-		},
-	}
+	// messages := []openai.ChatCompletionMessage{
+	// 	{
+	// 		Role:    openai.ChatMessageRoleSystem,
+	// 		Content: promptConfig.System,
+	// 	},
+	// 	{
+	// 		Role:    openai.ChatMessageRoleUser,
+	// 		Content: promptConfig.User,
+	// 	},
+	// }
 
+	// この次に-mオプションがあった場合は追加のメッセージを追加する
+	// promptConfig.System
+	// promptConfig.User
+	// 上記が存在したら、配列に追加する
+
+	var messages []openai.ChatCompletionMessage
+
+  if promptConfig.System != "" {
+    messages = append(messages, openai.ChatCompletionMessage{
+      Role:    "system",
+        Content: promptConfig.System,
+    })
+  }
+
+  if promptConfig.User != "" {
+    messages = append(messages, openai.ChatCompletionMessage{
+      Role:    "user",
+      Content: promptConfig.User,
+    })
+  }
+
+	// 添付ファイルの処理
 	for _, attachmentPath := range promptConfig.Attachments {
 		base64Image, mimeType, err := imageToBase64(attachmentPath)
 		if err != nil {

@@ -7,6 +7,7 @@ import (
 )
 
 type Prompt struct {
+	Model       string   `yaml:"model"`
 	System      string   `yaml:"system"`
 	User        string   `yaml:"user"`
 	Attachments []string `yaml:"attachments"`
