@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-  "strings"
+	"strings"
 	"time"
 
 	openai "github.com/sashabaranov/go-openai"
@@ -44,12 +44,17 @@ func main() {
 		log.Fatalf("Failed to read config.yaml: %v", err)
 	}
 
-
 	debugPrintf("Config: %v\n", config)
 
-	promptConfig, ok := config.Prompts[*promptOption]
-	if !ok {
-		log.Fatalf("Prompt option %s is not defined in the config file", *promptOption)
+	var promptConfig Prompt
+	if *promptOption != "" {
+		var ok bool
+		promptConfig, ok = config.Prompts[*promptOption]
+		if !ok {
+			log.Fatalf("Prompt option %s is not defined in the config file", *promptOption)
+		}
+	} else if *systemMessage == "" && *userMessage == "" {
+		log.Fatalf("-p(プロンプトの指定)が無い場合は-s(システムプロンプト)か-u(ユーザープロンプト)の指定が必要です")
 	}
 
 	// Systemのメッセージをコマンドラインのものに修正
@@ -85,8 +90,8 @@ func main() {
 	// https://github.com/sashabaranov/go-openai/blob/03851d20327b7df5358ff9fb0ac96f476be1875a/completion.go#L25
 	// デフォルトのモデルは gpt-4o とする
 	if promptConfig.Model == "" {
-      promptConfig.Model = "gpt-4o"
-  }
+		promptConfig.Model = "gpt-4o"
+	}
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
