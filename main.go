@@ -25,11 +25,13 @@ func main() {
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	flag.Parse()
 
+	// バージョンを表示
 	if *showVersion {
 		fmt.Printf("Version: %s\n", Version)
 		return
 	}
 
+	// -dオプションの時に出力されるデバック用出力
 	debugPrintf := func(format string, args ...interface{}) {
 		if *debug {
 			log.Printf(format, args...)
