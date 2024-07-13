@@ -12,7 +12,7 @@ go install github.com/tin-machine/gpt-cli@latest
 # 使い方
 
 ```
-gpt-cli -p prompt1 -m add-text.txt -o output.txt -d
+gpt-cli -p prompt1 -o output.txt -d
 ```
 
 # オプション
