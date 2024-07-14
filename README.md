@@ -49,3 +49,26 @@ prompts:
     user: |
       おはようございます、今日も良い天気ですね
 ```
+
+# 手軽にuserプロンプトを生成したい
+
+カレントディレクトリのGolangのファイルをレビューして欲しい場合
+
+file-output.bash みたいなファイルを作成し
+
+```bash
+#!/bin/bash
+
+for file in $(ls *.go) ; do
+  echo -e "${file}の内容です"
+  echo '```golang'
+  cat $file
+  echo -e '```\n'
+done
+```
+
+下記のようにすると手軽にレビューしてもらえます
+
+```
+gpt-cli -p prompt3 -u "$( ./file-output.bash )"  -o prompt3.log
+```
