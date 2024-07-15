@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -20,13 +21,17 @@ type Config struct {
 func LoadConfig(filePath string) (Config, error) {
 	var config Config
 	yamlFile, err := os.ReadFile(filePath)
+	// if err != nil {
+	// 	return config, err
+	// }
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("設定ファイルが読み込めませんでした。config.go LoadConfig (%s): %w", filePath, err)
 	}
 
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
-		return config, err
+		// return config, err
+		return config, fmt.Errorf("YAMLでの設定ファイルのunmarshalに失敗しました。config.go LoadConfig (%s): %w", filePath, err)
 	}
 
 	return config, nil

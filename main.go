@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ func main() {
 	systemMessage := flag.String("s", "", "Systemのメッセージを変更")
 	userMessage := flag.String("u", "", "Userのメッセージを変更")
 	imageList := flag.String("i", "", "画像ファイルをカンマ区切りで")
+	configPath := flag.String("c", "", "設定ファイルのパスを指定")
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	flag.Parse()
@@ -41,10 +43,20 @@ func main() {
 	log.SetOutput(os.Stderr)
 	debugPrintf("Version: %s\n", Version)
 
-	config, err := LoadConfig("config.yaml")
-	if err != nil {
-		log.Fatalf("Failed to read config.yaml: %v", err)
+	defaultConfigPath := filepath.Join(os.Getenv("HOME"), ".config", "gpt-cli", "config.yaml")
+	if *configPath == "" {
+		*configPath = defaultConfigPath
 	}
+
+	config, err := LoadConfig(*configPath)
+	if err != nil {
+		log.Fatalf("設定ファイルが読み込めません main.go (%s): %v", *configPath, err)
+	}
+
+	// config, err := LoadConfig("config.yaml")
+	// if err != nil {
+	// 	log.Fatalf("Failed to read config.yaml: %v", err)
+	// }
 
 	debugPrintf("Config: %v\n", config)
 
