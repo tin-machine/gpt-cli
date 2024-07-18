@@ -50,13 +50,8 @@ func main() {
 
 	config, err := LoadConfig(*configPath)
 	if err != nil {
-		log.Fatalf("設定ファイルが読み込めません main.go (%s): %v", *configPath, err)
+		log.Fatalf("設定ファイルが読み込めません。-c <config.yaml> とパスを指定するか、~/.config/gpt-cli/config.yamlに設置してください (%s): %v", *configPath, err)
 	}
-
-	// config, err := LoadConfig("config.yaml")
-	// if err != nil {
-	// 	log.Fatalf("Failed to read config.yaml: %v", err)
-	// }
 
 	debugPrintf("Config: %v\n", config)
 
