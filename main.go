@@ -117,7 +117,7 @@ func main() {
 
 	// デフォルトのモデル設定
 	if promptConfig.Model == "" {
-		promptConfig.Model = "gpt-4"
+		promptConfig.Model = "gpt-4o"
 	}
 
 	// コンテキストにタイムアウトを設定
