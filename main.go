@@ -17,6 +17,7 @@ import (
 var Version string
 
 func main() {
+	// コマンドラインオプションの定義
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
 	outputFile := flag.String("o", "", "出力するファイルを指定")
 	systemMessage := flag.String("s", "", "Systemのメッセージを変更")
@@ -25,15 +26,16 @@ func main() {
 	configPath := flag.String("c", "", "設定ファイルのパスを指定")
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
+	collectFiles := flag.Bool("collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
 	flag.Parse()
 
-	// バージョンを表示
+	// バージョン情報の表示
 	if *showVersion {
 		fmt.Printf("Version: %s\n", Version)
 		return
 	}
 
-	// -dオプションの時に出力されるデバック用出力
+	// デバッグ用の出力関数
 	debugPrintf := func(format string, args ...interface{}) {
 		if *debug {
 			log.Printf(format, args...)
@@ -43,79 +45,100 @@ func main() {
 	log.SetOutput(os.Stderr)
 	debugPrintf("Version: %s\n", Version)
 
+	// デフォルトの設定ファイルパス
 	defaultConfigPath := filepath.Join(os.Getenv("HOME"), ".config", "gpt-cli", "config.yaml")
 	if *configPath == "" {
 		*configPath = defaultConfigPath
 	}
 
+	// 設定ファイルの読み込み
 	config, err := LoadConfig(*configPath)
 	if err != nil {
-		log.Fatalf("設定ファイルが読み込めません。-c <config.yaml> とパスを指定するか、~/.config/gpt-cli/config.yamlに設置してください (%s): %v", *configPath, err)
+		log.Fatalf("設定ファイルが読み込めません。-c <config.yaml> とパスを指定するか、%sに設置してください: %v", defaultConfigPath, err)
 	}
 
 	debugPrintf("Config: %v\n", config)
 
 	var promptConfig Prompt
 	if *promptOption != "" {
+		// プロンプトの選択
 		var ok bool
 		promptConfig, ok = config.Prompts[*promptOption]
 		if !ok {
-			log.Fatalf("Prompt option %s is not defined in the config file", *promptOption)
+			log.Fatalf("プロンプトオプション %s は設定ファイルに定義されていません", *promptOption)
 		}
 	} else if *systemMessage == "" && *userMessage == "" {
-		log.Fatalf("-p(プロンプトの指定)が無い場合は-s(システムプロンプト)か-u(ユーザープロンプト)の指定が必要です")
+		log.Fatalf("-p(プロンプトの指定)が無い場合は-s(システムメッセージ)か-u(ユーザーメッセージ)の指定が必要です")
 	}
 
-	// Systemのメッセージをコマンドラインのものに修正
+	// コマンドライン引数からSystemメッセージを設定
 	if *systemMessage != "" {
 		promptConfig.System = *systemMessage
 	}
 
-	// Userのメッセージをコマンドラインのものに修正
+	// コマンドライン引数からUserメッセージを設定
 	if *userMessage != "" {
 		promptConfig.User = *userMessage
 	}
 
-	// カンマで文字列を分割
+	// ここで、-collect オプションが指定された場合のみ CollectFiles を実行
+	if *collectFiles {
+		// 現在のディレクトリ内のファイルを収集
+		filesContent, err := CollectFiles(".")
+		if err != nil {
+			log.Fatalf("ファイルの収集に失敗しました: %v", err)
+		}
+		// Userメッセージにファイル内容を追加
+		promptConfig.User += "\n\n" + filesContent
+	}
+
+	// 画像リストの処理
 	if *imageList != "" {
 		promptConfig.Attachments = strings.Split(*imageList, ",")
 	}
 
 	debugPrintf("Prompt config: %v\n", promptConfig)
 
+	// メッセージの作成
 	messages, err := CreateMessages(promptConfig)
 	if err != nil {
-		log.Fatalf("Failed to create messages: %v", err)
+		log.Fatalf("メッセージの作成に失敗しました: %v", err)
 	}
 
+	// HTTPクライアントの設定（タイムアウト付き）
 	httpClient := &http.Client{
 		Timeout: 60 * time.Second,
 	}
 
+	// OpenAIクライアントの初期化
 	openaiConfig := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
 	openaiConfig.HTTPClient = httpClient
 	client := openai.NewClientWithConfig(openaiConfig)
 
-	// https://github.com/sashabaranov/go-openai/blob/03851d20327b7df5358ff9fb0ac96f476be1875a/completion.go#L25
-	// デフォルトのモデルは gpt-4o とする
+	// デフォルトのモデル設定
 	if promptConfig.Model == "" {
-		promptConfig.Model = "gpt-4o"
+		promptConfig.Model = "gpt-4"
 	}
 
+	// コンテキストにタイムアウトを設定
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	// OpenAI APIへのリクエスト
 	resp, err := client.CreateChatCompletion(
-		context.Background(),
+		ctx,
 		openai.ChatCompletionRequest{
 			Model:    promptConfig.Model,
 			Messages: messages,
 		},
 	)
-
 	if err != nil {
-		log.Fatalf("ChatCompletion error: %v", err)
+		log.Fatalf("ChatCompletionエラー: %v", err)
 	}
 
 	debugPrintf("Response: %v\n", resp.Choices[0].Message.Content)
 
+	// 出力ファイルの設定
 	var outputFileName string
 	if *outputFile != "" {
 		outputFileName = *outputFile
@@ -123,13 +146,46 @@ func main() {
 		dirName := fmt.Sprintf("%v", time.Now().Unix())
 		err = os.Mkdir(dirName, 0755)
 		if err != nil {
-			log.Fatalf("Failed to create directory: %v\n", err)
+			log.Fatalf("ディレクトリの作成に失敗しました: %v", err)
 		}
 		outputFileName = fmt.Sprintf("%s/conversation.txt", dirName)
 	}
 
+	// 会話内容の保存
 	err = SaveConversation(outputFileName, resp.Choices[0].Message.Content)
 	if err != nil {
-		log.Fatalf("Failed to write conversation to file: %v\n", err)
+		log.Fatalf("会話内容のファイル保存に失敗しました: %v", err)
 	}
+}
+
+// CollectFilesは指定したディレクトリ内のファイル名と内容を収集します（.gitディレクトリを除く）
+func CollectFiles(dir string) (string, error) {
+	var builder strings.Builder
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// .gitディレクトリをスキップ
+		if info.IsDir() && info.Name() == ".git" {
+			return filepath.SkipDir
+		}
+
+		// ファイルの場合、名前と内容を取得
+		if !info.IsDir() {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			builder.WriteString(fmt.Sprintf("ファイル名: %s\n内容:\n%s\n\n", path, string(content)))
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return builder.String(), nil
 }
