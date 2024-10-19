@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 )
@@ -18,25 +19,39 @@ type Config struct {
 	Prompts map[string]Prompt `yaml:"prompts"`
 }
 
+// LoadConfig は指定されたファイルパスから設定を読み込みます
 func LoadConfig(filePath string) (Config, error) {
 	var config Config
-	yamlFile, err := os.ReadFile(filePath)
-	// if err != nil {
-	// 	return config, err
-	// }
+
+	// ファイルパスを正規化
+	cleanPath := filepath.Clean(filePath)
+
+	yamlFile, err := os.ReadFile(cleanPath)
 	if err != nil {
-		return config, fmt.Errorf("設定ファイルが読み込めませんでした。config.go LoadConfig (%s): %w", filePath, err)
+		if os.IsNotExist(err) {
+			return config, fmt.Errorf("設定ファイルが見つかりませんでした (%s): %w", cleanPath, err)
+		}
+		return config, fmt.Errorf("設定ファイルの読み込みに失敗しました (%s): %w", cleanPath, err)
 	}
 
-	err = yaml.Unmarshal(yamlFile, &config)
+	// YAMLファイルをパース
+	err = yaml.UnmarshalStrict(yamlFile, &config)
 	if err != nil {
-		// return config, err
-		return config, fmt.Errorf("YAMLでの設定ファイルのunmarshalに失敗しました。config.go LoadConfig (%s): %w", filePath, err)
+		return config, fmt.Errorf("設定ファイルの解析に失敗しました (%s): %w", cleanPath, err)
 	}
 
 	return config, nil
 }
 
+// SaveConversation は指定されたファイルパスに会話内容を保存します
 func SaveConversation(filePath string, content string) error {
-	return os.WriteFile(filePath, []byte(content), 0644)
+	// ファイルパスを正規化
+	cleanPath := filepath.Clean(filePath)
+
+	err := os.WriteFile(cleanPath, []byte(content), 0644)
+	if err != nil {
+		return fmt.Errorf("会話内容の保存に失敗しました (%s): %w", cleanPath, err)
+	}
+
+	return nil
 }

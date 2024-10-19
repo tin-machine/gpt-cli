@@ -113,28 +113,22 @@ func main() {
 		history, err := LoadConversationHistory(*historyFile)
 		if err == nil {
 			conversationHistory = history
-		} else if !os.IsNotExist(err) {
+		} else if os.IsNotExist(err) {
+			// ファイルが存在しない場合は新規の履歴を開始
+			conversationHistory = []openai.ChatCompletionMessage{}
+		} else {
 			log.Fatalf("会話履歴の読み込みに失敗しました: %v", err)
 		}
 	}
 
-	// システムメッセージを履歴に追加（最初に一度だけ）
-	if promptConfig.System != "" && len(conversationHistory) == 0 {
-		systemMessage := openai.ChatCompletionMessage{
-			Role:    openai.ChatMessageRoleSystem,
-			Content: promptConfig.System,
-		}
-		conversationHistory = append(conversationHistory, systemMessage)
+	// メッセージを作成
+	messages, err := CreateMessages(promptConfig)
+	if err != nil {
+		log.Fatalf("メッセージの作成に失敗しました: %v", err)
 	}
 
-	// ユーザーメッセージを履歴に追加
-	if promptConfig.User != "" {
-		userMessage := openai.ChatCompletionMessage{
-			Role:    openai.ChatMessageRoleUser,
-			Content: promptConfig.User,
-		}
-		conversationHistory = append(conversationHistory, userMessage)
-	}
+	// メッセージを会話履歴に追加
+	conversationHistory = append(conversationHistory, messages...)
 
 	// HTTPクライアントの設定（タイムアウト付き）
 	httpClient := &http.Client{
