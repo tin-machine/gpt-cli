@@ -1,26 +1,21 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
-	"time"
-
-	openai "github.com/sashabaranov/go-openai"
 )
 
 var Version string
 
-// デフォルトのモデル名を設定
-const defaultModel = "gpt-4o"
-
 func main() {
+	if err := Run(); err != nil {
+		log.Fatalf("エラーが発生しました: %v", err)
+	}
+}
+
+func Run() error {
 	// コマンドラインオプションの定義
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
 	outputFile := flag.String("o", "", "出力するファイルを指定")
@@ -33,228 +28,101 @@ func main() {
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	collectFiles := flag.Bool("collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
 	historyFile := flag.String("history", "", "会話履歴の保存ファイルを指定（拡張子は不要）")
+	timeout := flag.Int("t", 60, "タイムアウト時間（秒）を指定")
 	flag.Parse()
 
 	// バージョン情報の表示
 	if *showVersion {
 		fmt.Printf("Version: %s\n", Version)
-		return
+		return nil
 	}
 
-	// デバッグ用の出力関数
-	debugPrintf := func(format string, args ...interface{}) {
-		if *debug {
-			log.Printf(format, args...)
-		}
+	// ログレベルの設定
+	if *debug {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	} else {
+		log.SetFlags(0)
+		log.SetOutput(os.Stderr)
 	}
 
-	log.SetOutput(os.Stderr)
-	debugPrintf("Version: %s\n", Version)
-
-	// デフォルトの設定ファイルパス
-	defaultConfigPath := filepath.Join(os.Getenv("HOME"), ".config", "gpt-cli", "config.yaml")
-	if *configPath == "" {
-		*configPath = defaultConfigPath
+	// 設定ファイルのパスを取得
+	configFilePath, err := GetConfigFilePath(*configPath)
+	if err != nil {
+		return err
 	}
 
 	// 設定ファイルの読み込み
-	config, err := LoadConfig(*configPath)
+	config, err := LoadConfig(configFilePath)
 	if err != nil {
-		log.Fatalf("設定ファイルが読み込めません。-c <config.yaml> とパスを指定するか、%sに設置してください: %v", defaultConfigPath, err)
+		return fmt.Errorf("設定ファイルが読み込めません: %w", err)
 	}
 
-	debugPrintf("Config: %v\n", config)
-
-	var promptConfig Prompt
-	if *promptOption != "" {
-		// プロンプトの選択
-		var ok bool
-		promptConfig, ok = config.Prompts[*promptOption]
-		if !ok {
-			log.Fatalf("プロンプトオプション %s は設定ファイルに定義されていません", *promptOption)
-		}
-	} else if *systemMessage == "" && *userMessage == "" {
-		log.Fatalf("-p(プロンプトの指定)が無い場合は-s(システムメッセージ)か-u(ユーザーメッセージ)の指定が必要です")
-	}
-
-	// コマンドライン引数からSystemメッセージを設定
-	if *systemMessage != "" {
-		promptConfig.System = *systemMessage
-	}
-
-	// コマンドライン引数からUserメッセージを設定
-	if *userMessage != "" {
-		promptConfig.User = *userMessage
-	}
-
-	// コマンドライン引数からモデルを設定
-	if *model != "" {
-		promptConfig.Model = *model
-	}
-
-	// デフォルトのモデル設定
-	if promptConfig.Model == "" {
-		promptConfig.Model = defaultModel
-	}
-
-	// ここで、-collect オプションが指定された場合のみ CollectFiles を実行
-	if *collectFiles {
-		// 現在のディレクトリ内のファイルを収集
-		filesContent, err := CollectFiles(".")
-		if err != nil {
-			log.Fatalf("ファイルの収集に失敗しました: %v", err)
-		}
-		// Userメッセージにファイル内容を追加
-		promptConfig.User += "\n\n" + filesContent
+	// プロンプトの設定取得
+	promptConfig, err := GetPromptConfig(config, *promptOption, *systemMessage, *userMessage, *model)
+	if err != nil {
+		return err
 	}
 
 	// 画像リストの処理
 	if *imageList != "" {
-		promptConfig.Attachments = strings.Split(*imageList, ",")
+		promptConfig.Attachments = SplitImageList(*imageList)
 	}
 
-	debugPrintf("Prompt config: %v\n", promptConfig)
-
-	// 会話履歴の初期化
-	var conversationHistory []openai.ChatCompletionMessage
-
-	// 履歴ファイルが指定されている場合は読み込む
-	if *historyFile != "" {
-		// 拡張子がない場合は .json を追加
-		if filepath.Ext(*historyFile) == "" {
-			*historyFile += ".json"
+	// -collect オプションが指定された場合、ファイルを収集
+	if *collectFiles {
+		filesContent, err := CollectFiles(".")
+		if err != nil {
+			return fmt.Errorf("ファイルの収集に失敗しました: %w", err)
 		}
-		history, err := LoadConversationHistory(*historyFile)
-		if err == nil {
-			conversationHistory = history
-		} else if os.IsNotExist(err) {
-			// ファイルが存在しない場合は新規の履歴を開始
-			conversationHistory = []openai.ChatCompletionMessage{}
-		} else {
-			log.Fatalf("会話履歴の読み込みに失敗しました: %v", err)
-		}
+		promptConfig.User += "\n\n" + filesContent
 	}
 
-	// メッセージを作成
+	// 会話履歴の読み込み
+	conversationHistory, err := LoadConversationHistory(*historyFile)
+	if err != nil {
+		return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
+	}
+
+	// メッセージの作成
 	messages, err := CreateMessages(promptConfig)
 	if err != nil {
-		log.Fatalf("メッセージの作成に失敗しました: %v", err)
+		return fmt.Errorf("メッセージの作成に失敗しました: %w", err)
 	}
 
-	// メッセージを会話履歴に追加
+	// 会話履歴にメッセージを追加
 	conversationHistory = append(conversationHistory, messages...)
 
-	// HTTPクライアントの設定（タイムアウト付き）
-	httpClient := &http.Client{
-		Timeout: 60 * time.Second,
-	}
-
-	// OpenAIクライアントの初期化
-	openaiConfig := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
-	openaiConfig.HTTPClient = httpClient
-	client := openai.NewClientWithConfig(openaiConfig)
-
-	// コンテキストにタイムアウトを設定
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
-	// OpenAI APIへのリクエスト
-	resp, err := client.CreateChatCompletion(
-		ctx,
-		openai.ChatCompletionRequest{
-			Model:    promptConfig.Model,
-			Messages: conversationHistory, // 会話の履歴全体を送信
-		},
-	)
+	// OpenAI API クライアントの初期化
+	client, err := NewOpenAIClient(*timeout)
 	if err != nil {
-		log.Fatalf("ChatCompletionエラー: %v", err)
+		return fmt.Errorf("OpenAIクライアントの初期化に失敗しました: %w", err)
 	}
 
-	// モデルからの応答を履歴に追加
-	assistantMessage := resp.Choices[0].Message
+	// OpenAI API へのリクエスト
+	assistantMessage, err := ExecuteChatCompletion(client, promptConfig.Model, conversationHistory)
+	if err != nil {
+		return fmt.Errorf("ChatCompletionエラー: %w", err)
+	}
+
+	// 会話履歴にアシスタントの応答を追加
 	conversationHistory = append(conversationHistory, assistantMessage)
 
-	debugPrintf("Response: %v\n", assistantMessage.Content)
-
-	// 会話履歴を保存
+	// 会話履歴の保存
 	if *historyFile != "" {
 		err = SaveConversationHistory(*historyFile, conversationHistory)
 		if err != nil {
-			log.Fatalf("会話履歴の保存に失敗しました: %v", err)
+			return fmt.Errorf("会話履歴の保存に失敗しました: %w", err)
 		}
 	}
 
-	// 出力ファイルの設定
-	var outputFileName string
-	if *outputFile != "" {
-		outputFileName = *outputFile
-	} else {
-		dirName := fmt.Sprintf("%v", time.Now().Unix())
-		err = os.Mkdir(dirName, 0755)
-		if err != nil {
-			log.Fatalf("ディレクトリの作成に失敗しました: %v", err)
-		}
-		outputFileName = fmt.Sprintf("%s/conversation.txt", dirName)
-	}
-
-	// 会話内容の保存
-	err = SaveConversation(outputFileName, assistantMessage.Content)
+	// 出力ファイルの保存
+	err = SaveOutput(*outputFile, assistantMessage.Content)
 	if err != nil {
-		log.Fatalf("会話内容のファイル保存に失敗しました: %v", err)
-	}
-}
-
-// CollectFilesは指定したディレクトリ内のファイル名と内容を収集します（.gitディレクトリを除く）
-func CollectFiles(dir string) (string, error) {
-	var builder strings.Builder
-
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// .gitディレクトリをスキップ
-		if info.IsDir() && info.Name() == ".git" {
-			return filepath.SkipDir
-		}
-
-		// ファイルの場合、名前と内容を取得
-		if !info.IsDir() {
-			content, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			builder.WriteString(fmt.Sprintf("ファイル名: %s\n内容:\n%s\n\n", path, string(content)))
-		}
-		return nil
-	})
-
-	if err != nil {
-		return "", err
+		return fmt.Errorf("出力ファイルの保存に失敗しました: %w", err)
 	}
 
-	return builder.String(), nil
-}
+	// 標準出力に結果を表示
+	fmt.Println(assistantMessage.Content)
 
-// SaveConversationHistoryは会話履歴をファイルに保存します
-func SaveConversationHistory(filename string, history []openai.ChatCompletionMessage) error {
-	data, err := json.Marshal(history)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(filename, data, 0644)
-}
-
-// LoadConversationHistoryはファイルから会話履歴を読み込みます
-func LoadConversationHistory(filename string) ([]openai.ChatCompletionMessage, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	var history []openai.ChatCompletionMessage
-	err = json.Unmarshal(data, &history)
-	if err != nil {
-		return nil, err
-	}
-	return history, nil
+	return nil
 }
