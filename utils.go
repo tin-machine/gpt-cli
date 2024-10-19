@@ -50,6 +50,23 @@ func CollectFiles(dir string) (string, error) {
 	return builder.String(), nil
 }
 
+// ReadFiles はカンマ区切りのファイルリストからファイルを読み込み、内容を結合して返します
+func ReadFiles(fileList string) (string, error) {
+	var builder strings.Builder
+	files := strings.Split(fileList, ",")
+
+	for _, filePath := range files {
+		filePath = strings.TrimSpace(filePath) // 前後の空白を削除
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return "", fmt.Errorf("ファイルの読み込みに失敗しました (%s): %w", filePath, err)
+		}
+		builder.WriteString(fmt.Sprintf("ファイル名: %s\n内容:\n%s\n\n", filePath, string(content)))
+	}
+
+	return builder.String(), nil
+}
+
 // CreateMessages はプロンプト設定からメッセージを作成します
 func CreateMessages(promptConfig Prompt) ([]openai.ChatCompletionMessage, error) {
 	var messages []openai.ChatCompletionMessage

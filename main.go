@@ -29,6 +29,7 @@ func Run() error {
 	collectFiles := flag.Bool("collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
 	historyFile := flag.String("history", "", "会話履歴の保存ファイルを指定（拡張子は不要）")
 	timeout := flag.Int("t", 60, "タイムアウト時間（秒）を指定")
+	fileList := flag.String("f", "", "読み込むファイルのパスをカンマ区切りで指定")
 	flag.Parse()
 
 	// バージョン情報の表示
@@ -73,6 +74,15 @@ func Run() error {
 		filesContent, err := CollectFiles(".")
 		if err != nil {
 			return fmt.Errorf("ファイルの収集に失敗しました: %w", err)
+		}
+		promptConfig.User += "\n\n" + filesContent
+	}
+
+	// -f オプションが指定された場合、ファイルを読み込む
+	if *fileList != "" {
+		filesContent, err := ReadFiles(*fileList)
+		if err != nil {
+			return fmt.Errorf("ファイルの読み込みに失敗しました: %w", err)
 		}
 		promptConfig.User += "\n\n" + filesContent
 	}
