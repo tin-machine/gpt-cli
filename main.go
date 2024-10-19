@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -27,6 +28,7 @@ func main() {
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	collectFiles := flag.Bool("collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
+	historyFile := flag.String("history", "", "会話履歴の保存ファイルを指定（拡張子は不要）")
 	flag.Parse()
 
 	// バージョン情報の表示
@@ -99,10 +101,39 @@ func main() {
 
 	debugPrintf("Prompt config: %v\n", promptConfig)
 
-	// メッセージの作成
-	messages, err := CreateMessages(promptConfig)
-	if err != nil {
-		log.Fatalf("メッセージの作成に失敗しました: %v", err)
+	// 会話履歴の初期化
+	var conversationHistory []openai.ChatCompletionMessage
+
+	// 履歴ファイルが指定されている場合は読み込む
+	if *historyFile != "" {
+		// 拡張子がない場合は .json を追加
+		if filepath.Ext(*historyFile) == "" {
+			*historyFile += ".json"
+		}
+		history, err := LoadConversationHistory(*historyFile)
+		if err == nil {
+			conversationHistory = history
+		} else if !os.IsNotExist(err) {
+			log.Fatalf("会話履歴の読み込みに失敗しました: %v", err)
+		}
+	}
+
+	// システムメッセージを履歴に追加（最初に一度だけ）
+	if promptConfig.System != "" && len(conversationHistory) == 0 {
+		systemMessage := openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleSystem,
+			Content: promptConfig.System,
+		}
+		conversationHistory = append(conversationHistory, systemMessage)
+	}
+
+	// ユーザーメッセージを履歴に追加
+	if promptConfig.User != "" {
+		userMessage := openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleUser,
+			Content: promptConfig.User,
+		}
+		conversationHistory = append(conversationHistory, userMessage)
 	}
 
 	// HTTPクライアントの設定（タイムアウト付き）
@@ -129,14 +160,26 @@ func main() {
 		ctx,
 		openai.ChatCompletionRequest{
 			Model:    promptConfig.Model,
-			Messages: messages,
+			Messages: conversationHistory, // 会話の履歴全体を送信
 		},
 	)
 	if err != nil {
 		log.Fatalf("ChatCompletionエラー: %v", err)
 	}
 
-	debugPrintf("Response: %v\n", resp.Choices[0].Message.Content)
+	// モデルからの応答を履歴に追加
+	assistantMessage := resp.Choices[0].Message
+	conversationHistory = append(conversationHistory, assistantMessage)
+
+	debugPrintf("Response: %v\n", assistantMessage.Content)
+
+	// 会話履歴を保存
+	if *historyFile != "" {
+		err = SaveConversationHistory(*historyFile, conversationHistory)
+		if err != nil {
+			log.Fatalf("会話履歴の保存に失敗しました: %v", err)
+		}
+	}
 
 	// 出力ファイルの設定
 	var outputFileName string
@@ -152,7 +195,7 @@ func main() {
 	}
 
 	// 会話内容の保存
-	err = SaveConversation(outputFileName, resp.Choices[0].Message.Content)
+	err = SaveConversation(outputFileName, assistantMessage.Content)
 	if err != nil {
 		log.Fatalf("会話内容のファイル保存に失敗しました: %v", err)
 	}
@@ -188,4 +231,27 @@ func CollectFiles(dir string) (string, error) {
 	}
 
 	return builder.String(), nil
+}
+
+// SaveConversationHistoryは会話履歴をファイルに保存します
+func SaveConversationHistory(filename string, history []openai.ChatCompletionMessage) error {
+	data, err := json.Marshal(history)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filename, data, 0644)
+}
+
+// LoadConversationHistoryはファイルから会話履歴を読み込みます
+func LoadConversationHistory(filename string) ([]openai.ChatCompletionMessage, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	var history []openai.ChatCompletionMessage
+	err = json.Unmarshal(data, &history)
+	if err != nil {
+		return nil, err
+	}
+	return history, nil
 }
