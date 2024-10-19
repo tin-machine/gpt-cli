@@ -17,6 +17,9 @@ import (
 
 var Version string
 
+// デフォルトのモデル名を設定
+const defaultModel = "gpt-4o"
+
 func main() {
 	// コマンドラインオプションの定義
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
@@ -25,6 +28,7 @@ func main() {
 	userMessage := flag.String("u", "", "Userのメッセージを変更")
 	imageList := flag.String("i", "", "画像ファイルをカンマ区切りで")
 	configPath := flag.String("c", "", "設定ファイルのパスを指定")
+	model := flag.String("m", "", "使用するモデルを指定")
 	debug := flag.Bool("d", false, "デバッグモードを有効にする")
 	showVersion := flag.Bool("version", false, "バージョン情報を表示")
 	collectFiles := flag.Bool("collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
@@ -83,6 +87,16 @@ func main() {
 		promptConfig.User = *userMessage
 	}
 
+	// コマンドライン引数からモデルを設定
+	if *model != "" {
+		promptConfig.Model = *model
+	}
+
+	// デフォルトのモデル設定
+	if promptConfig.Model == "" {
+		promptConfig.Model = defaultModel
+	}
+
 	// ここで、-collect オプションが指定された場合のみ CollectFiles を実行
 	if *collectFiles {
 		// 現在のディレクトリ内のファイルを収集
@@ -139,11 +153,6 @@ func main() {
 	openaiConfig := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
 	openaiConfig.HTTPClient = httpClient
 	client := openai.NewClientWithConfig(openaiConfig)
-
-	// デフォルトのモデル設定
-	if promptConfig.Model == "" {
-		promptConfig.Model = "gpt-4o"
-	}
 
 	// コンテキストにタイムアウトを設定
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
