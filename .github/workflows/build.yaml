@@ -17,13 +17,11 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.22'
+          go-version: '1.21'  # 最新の安定版を指定
 
       - name: Get dependencies
         run: go mod download
@@ -52,7 +50,11 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
+          name: '**'  # すべてのアーティファクトをダウンロード
           path: build
+
+      - name: List build directory
+        run: ls -la build
 
       - name: Create GitHub Release
         id: create_release
