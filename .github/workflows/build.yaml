@@ -52,6 +52,12 @@ jobs:
         with:
           path: build
 
+      - name: print pwd
+        run: pwd
+
+      - name: print ls
+        run: ls
+
       - name: List build directory
         run: ls -la build
 
