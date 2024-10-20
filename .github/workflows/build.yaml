@@ -78,6 +78,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/*
+          file: build/gpt*
           asset_name: "{{name}}"
           tag: v${{ github.run_number }}
