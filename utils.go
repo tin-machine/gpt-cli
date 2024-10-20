@@ -11,6 +11,9 @@ import (
 	"time"
 
 	openai "github.com/sashabaranov/go-openai"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // SplitImageList は画像ファイルのリストを分割します
@@ -179,4 +182,13 @@ func SaveOutput(outputFile, content string) error {
 	}
 
 	return os.WriteFile(outputFileName, []byte(content), 0600)
+}
+
+// DisplayConversationHistory は会話履歴をMarkdown形式で表示します
+func DisplayConversationHistory(history []openai.ChatCompletionMessage) {
+	c := cases.Title(language.Und) // 言語を指定（ここでは未指定）
+	for _, message := range history {
+		role := c.String(message.Role)
+		fmt.Printf("### %s\n\n%s\n\n", role, message.Content)
+	}
 }

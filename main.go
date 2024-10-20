@@ -30,6 +30,7 @@ func Run() error {
 	historyFile := flag.String("history", "", "会話履歴の保存ファイルを指定（拡張子は不要）")
 	timeout := flag.Int("t", 60, "タイムアウト時間（秒）を指定")
 	fileList := flag.String("f", "", "読み込むファイルのパスをカンマ区切りで指定")
+	showHistory := flag.Bool("show-history", false, "会話履歴を表示")
 	flag.Parse()
 
 	// バージョン情報の表示
@@ -91,6 +92,16 @@ func Run() error {
 	conversationHistory, err := LoadConversationHistory(*historyFile)
 	if err != nil {
 		return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
+	}
+
+	// -show-history オプションが指定された場合、会話履歴を表示して終了
+	if *showHistory {
+		if len(conversationHistory) == 0 {
+			fmt.Println("会話履歴はありません。")
+			return nil
+		}
+		DisplayConversationHistory(conversationHistory)
+		return nil
 	}
 
 	// メッセージの作成
