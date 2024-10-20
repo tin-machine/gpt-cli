@@ -49,11 +49,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -77,5 +72,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/*
-          asset_name: "${{ basename }}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          asset_name: "{{name}}"
           tag: v${{ github.run_number }}
