@@ -80,5 +80,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
           file: build/gpt*
+          overwrite: true
           asset_name: "{{name}}"
           tag: v${{ github.run_number }}
