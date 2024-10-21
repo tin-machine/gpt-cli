@@ -12,7 +12,7 @@ go install github.com/tin-machine/gpt-cli@latest
 # 使い方
 
 ```
-gpt-cli -p prompt1 -o output.txt -d
+gpt-cli -p prompt1 -o output.txt
 ```
 
 # オプション
@@ -78,5 +78,5 @@ done
 下記のようにすると手軽にレビューしてもらえます
 
 ```
-gpt-cli -p prompt3 -u "$( ./file-output.bash )"  -o prompt3.log
+gpt-cli -p prompt4 -u "$( ./file-output.bash )"  -o prompt3.log
 ```
