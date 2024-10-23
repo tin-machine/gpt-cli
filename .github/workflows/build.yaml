@@ -77,7 +77,10 @@ jobs:
         name: ${{ github.event.pull_request.body }}
         tag_name: ${{ github.event.pull_request.title }}
         generate_release_notes: true
-        files: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
+        files: |
+          build/gpt-cli-darwin-amd64
+          build/gpt-cli-linux-amd64
+          build/gpt-cli-linux-arm64
 
 #    - name: Run tests
 #      run: go test -v ./...
