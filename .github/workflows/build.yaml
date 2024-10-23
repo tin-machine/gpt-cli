@@ -8,7 +8,6 @@ on:
     branches: [ main ]
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -50,17 +49,16 @@ jobs:
         echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}"
         mkdir -p build
         GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X main.Version=${{ env.VERSION }}" -v -o build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
-
   release:
+    name: release
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     needs: build
-    runs-on: ubuntu-latest
     env:
       VERSION: ${{ github.ref_name }}
     permissions:
