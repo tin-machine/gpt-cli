@@ -62,17 +62,25 @@ jobs:
     needs: build
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.ref_name }}
+    permissions: write
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: build
-      - name: List build directory
-        run: ls -la build
-      - name: リリース作成
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.event.pull_request.title }}
-          name: ${{ github.event.pull_request.body }}
-          generate_release_notes: true
-          files: build/*
+      - run:
+        gh release create "${VERSION}" --title "${VERSION}" --generate-notes
+        gh release upload "${VERSION}" "build/*"
+
+
+#      - name: Download all artifacts
+#        uses: actions/download-artifact@v4
+#        with:
+#          path: build
+#      - name: List build directory
+#        run: ls -la build
+#      - name: リリース作成
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          tag_name: ${{ github.event.pull_request.title }}
+#          name: ${{ github.event.pull_request.body }}
+#          generate_release_notes: true
+#          files: build/*
