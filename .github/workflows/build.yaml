@@ -65,8 +65,8 @@ jobs:
       contents: write
     steps:
       - run: |
-        gh release create "${VERSION}" --title "${VERSION}" --generate-notes
-        gh release upload "${VERSION}" "build/*"
+          gh release create "${VERSION}" --title "${VERSION}" --generate-notes
+          gh release upload "${VERSION}" "build/*"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
