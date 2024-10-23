@@ -20,7 +20,8 @@ jobs:
             goarch: arm64
           - goos: darwin
             goarch: amd64
-
+    outputs:
+      VERSION: ${{ steps.set_version.outputs.VERSION }}
     steps:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -36,6 +37,7 @@ jobs:
       run: go mod download
 
     - name: Set Version
+      id: set_version
       run: |
         if [ "${{ github.ref_type }}" = "tag" ]; then
           echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
@@ -59,29 +61,21 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     needs: build
-    env:
-      VERSION: ${{ github.ref_name }}
     permissions:
       contents: write
     steps:
-      - run: |
-          gh release create "${VERSION}" --title "${VERSION}" --generate-notes
-          gh release upload "${VERSION}" "build/*"
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: build
+
+      - name: Install GitHub CLI
+        uses: actions/setup-gh@v3
+
+      - name: Create and Upload Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-#      - name: Download all artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          path: build
-#      - name: List build directory
-#        run: ls -la build
-#      - name: リリース作成
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          tag_name: ${{ github.event.pull_request.title }}
-#          name: ${{ github.event.pull_request.body }}
-#          generate_release_notes: true
-#          files: build/*
+          VERSION: ${{ needs.build.outputs.VERSION }}
+        run: |
+          gh release create "${VERSION}" --title "${VERSION}" --generate-notes
+          gh release upload "${VERSION}" build/*
