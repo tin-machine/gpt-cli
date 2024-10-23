@@ -17,10 +17,10 @@ jobs:
         include:
           - goos: linux
             goarch: amd64
-          - goos: darwin
-            goarch: amd64
           - goos: linux
             goarch: arm64
+          - goos: darwin
+            goarch: amd64
 
     steps:
     - name: Check out code into the Go module directory
@@ -75,7 +75,4 @@ jobs:
           tag_name: ${{ github.event.pull_request.title }}
           name: ${{ github.event.pull_request.body }}
           generate_release_notes: true
-          files: |
-            build/gpt-cli-darwin-amd64
-            build/gpt-cli-linux-amd64
-            build/gpt-cli-linux-arm64
+          files: build/*
