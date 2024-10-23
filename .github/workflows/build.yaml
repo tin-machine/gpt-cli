@@ -58,17 +58,20 @@ jobs:
         path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
 
   release:
-    name: Create Release
-    needs: build
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ github.ref_name }}
-    permissions: write
+    permissions:
+      contents: write
     steps:
-      - run:
+      - run: |
         gh release create "${VERSION}" --title "${VERSION}" --generate-notes
         gh release upload "${VERSION}" "build/*"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
 #      - name: Download all artifacts
