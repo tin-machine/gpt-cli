@@ -79,4 +79,4 @@ jobs:
           echo ${VERSION}
           ls -R
           gh release create --title "${VERSION}" --generate-notes "${VERSION}"
-          gh release upload "${VERSION}" gpt-cli-darwin-amd64 gpt-cli-linux-amd64 gpt-cli-linux-arm64
+          gh release upload "${VERSION}" gpt-cli-darwin-amd64/gpt-cli-darwin-amd64 gpt-cli-linux-amd64/gpt-cli-linux-amd64 gpt-cli-linux-arm64/gpt-cli-linux-arm64
