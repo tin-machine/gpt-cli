@@ -54,7 +54,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-artifact
+        name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
         path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
   release:
     name: release
@@ -66,9 +66,6 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: build
       - name: Create and Upload Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
