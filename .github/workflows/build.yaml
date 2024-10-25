@@ -71,6 +71,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.set_version.outputs.version }}
         run: |
-          echo $VERSION
+          echo ${VERSION}
           gh release create --title "${VERSION}" --generate-notes "${VERSION}" gpt-cli-*
           # gh release upload "${VERSION}" build/*
