@@ -71,5 +71,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.set_version.outputs.version }}
         run: |
-          gh release create "${VERSION}" --title "${VERSION}" --generate-notes
-          gh release upload "${VERSION}" build/*
+          gh release create --title "${VERSION}" --generate-notes "${VERSION}" build/*
+          # gh release upload "${VERSION}" build/*
