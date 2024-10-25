@@ -21,7 +21,7 @@ jobs:
           - goos: darwin
             goarch: amd64
     outputs:
-      VERSION: ${{ steps.set_version.outputs.VERSION }}
+      version: ${{ steps.set_version.outputs.version }}
     steps:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
@@ -36,21 +36,21 @@ jobs:
     - name: Get dependencies
       run: go mod download
 
-    - name: Set Version
+    - name: set tag name output
       id: set_version
       run: |
         if [ "${{ github.ref_type }}" = "tag" ]; then
-          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
         else
-          echo "VERSION=${{ github.sha }}" >> $GITHUB_ENV
+          echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
         fi
-        echo "Version is ${{ env.VERSION }}"
+        echo "version is ${{ env.version }}"
 
     - name: Build
       run: |
         echo "Building for ${{ matrix.goos }}/${{ matrix.goarch }}"
         mkdir -p build
-        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X main.Version=${{ env.VERSION }}" -v -o build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X main.Version=${{ env.tag }}" -v -o build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }} ./...
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -76,7 +76,7 @@ jobs:
       - name: Create and Upload Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ github.ref_name }}
+          VERSION: ${{ needs.set_version.outputs.version }}
         run: |
           gh release create "${VERSION}" --title "${VERSION}" --generate-notes
           gh release upload "${VERSION}" build/*
