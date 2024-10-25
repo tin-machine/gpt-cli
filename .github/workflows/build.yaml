@@ -54,7 +54,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
+        name: build-artifact
         path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
   release:
     name: release
@@ -64,14 +64,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: build
+          name: build-artifacts
           path: build
       - name: Create and Upload Release
         env:
