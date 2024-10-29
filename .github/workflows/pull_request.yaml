@@ -20,8 +20,9 @@ jobs:
 
       # Lintチェック
       - name: Install golint
-        run: go install golang.org/x/lint/golint@latest
-        echo "$HOME/go/bin" >> $GITHUB_PATH  # golintのパスを追加
+        run: |
+          go install golang.org/x/lint/golint@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH  # golintのパスを追加
 
       - name: Run golint
         run: golint ./...  # プロジェクト全体をLintチェック
