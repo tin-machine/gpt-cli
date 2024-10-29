@@ -54,29 +54,3 @@ jobs:
         with:
           name: gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
           path: build/gpt-cli-${{ matrix.goos }}-${{ matrix.goarch }}
-
-#   release:
-#     name: release
-#     runs-on: ubuntu-latest
-#     if: github.event_name == 'push' && github.ref == 'refs/heads/main'  # mainブランチにマージされたときのみ
-#     needs: build
-#     permissions:
-#       contents: write
-#     steps:
-#       - name: Check out code into the Go module directory
-#         uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0
-#       - name: Download artifacts
-#         uses: actions/download-artifact@v4
-#       - name: Display file
-#         run: ls -R
-#       - name: Create and Upload Release
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#           VERSION: ${{ needs.build.outputs.version }}
-#         run: |
-#           echo ${VERSION}
-#           ls -R
-#           gh release create --title "${VERSION}" --generate-notes "${VERSION}"
-#           gh release upload "${VERSION}" gpt-cli-darwin-amd64/gpt-cli-darwin-amd64 gpt-cli-linux-amd64/gpt-cli-linux-amd64 gpt-cli-linux-arm64/gpt-cli-linux-arm64
