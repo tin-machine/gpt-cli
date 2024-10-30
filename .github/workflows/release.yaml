@@ -5,13 +5,32 @@ on:
     branches: [ main ]
 
 jobs:
+  build:
+    name: Build for Release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, darwin]
+        goarch: [amd64, arm64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Build Action
+        id: build_step
+        uses: ./.github/actions/build-action
+        with:
+          go-version-file: 'go.mod'
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+
   release:
     runs-on: ubuntu-latest
     needs: build  # ビルドジョブを依存関係として設定
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Read current version
         id: get_version
