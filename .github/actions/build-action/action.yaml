@@ -25,6 +25,7 @@ runs:
 
     - name: Get dependencies
       run: go mod download
+      shell: bash
 
     - name: Set version
       id: set_version
@@ -34,12 +35,14 @@ runs:
         else
           echo "version=${{ github.sha }}" >> "$GITHUB_OUTPUT"
         fi
+      shell: bash
 
     - name: Build
       run: |
         echo "Building for ${{ inputs.goos }}/${{ inputs.goarch }}"
         mkdir -p build
         GOOS=${{ inputs.goos }} GOARCH=${{ inputs.goarch }} go build -ldflags="-X main.Version=${{ steps.set_version.outputs.version }}" -v -o build/gpt-cli-${{ inputs.goos }}-${{ inputs.goarch }} ./...
+      shell: bash
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
