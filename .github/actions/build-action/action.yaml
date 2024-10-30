@@ -52,3 +52,4 @@ runs:
 
     - name: Set output version
       run: echo "build-version=${{ steps.set_version.outputs.version }}" >> $GITHUB_OUTPUT
+      shell: bash
