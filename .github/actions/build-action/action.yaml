@@ -1,0 +1,51 @@
+# .github/actions/build-action/action.yml
+name: 'Go Build Action'
+description: 'Build Go application for multiple platforms'
+inputs:
+  go-version-file:
+    description: 'Path to go.mod file to determine Go version'
+    required: true
+  goos:
+    description: 'Target operating system (e.g., linux, darwin)'
+    required: true
+  goarch:
+    description: 'Target architecture (e.g., amd64, arm64)'
+    required: true
+outputs:
+  build-version:
+    description: 'Version of the build'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version-file: ${{ inputs.go-version-file }}
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Set version
+      id: set_version
+      run: |
+        if [ "${{ github.ref_type }}" = "tag" ]; then
+          echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "version=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Build
+      run: |
+        echo "Building for ${{ inputs.goos }}/${{ inputs.goarch }}"
+        mkdir -p build
+        GOOS=${{ inputs.goos }} GOARCH=${{ inputs.goarch }} go build -ldflags="-X main.Version=${{ steps.set_version.outputs.version }}" -v -o build/gpt-cli-${{ inputs.goos }}-${{ inputs.goarch }} ./...
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: gpt-cli-${{ inputs.goos }}-${{ inputs.goarch }}
+        path: build/gpt-cli-${{ inputs.goos }}-${{ inputs.goarch }}
+
+    - name: Set output version
+      run: echo "build-version=${{ steps.set_version.outputs.version }}" >> $GITHUB_OUTPUT
