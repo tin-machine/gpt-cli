@@ -32,6 +32,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # バージョンを上げるコミットを作る
       - name: Read current version
         id: get_version
         run: |
