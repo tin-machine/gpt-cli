@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	openai "github.com/sashabaranov/go-openai"
 
@@ -165,23 +164,6 @@ func LoadConversationHistory(filename string) ([]openai.ChatCompletionMessage, e
 		return nil, err
 	}
 	return history, nil
-}
-
-// SaveOutput はアシスタントの応答をファイルに保存します
-func SaveOutput(outputFile, content string) error {
-	var outputFileName string
-	if outputFile != "" {
-		outputFileName = outputFile
-	} else {
-		dirName := fmt.Sprintf("%v", time.Now().Unix())
-		err := os.Mkdir(dirName, 0700)
-		if err != nil {
-			return fmt.Errorf("ディレクトリの作成に失敗しました: %w", err)
-		}
-		outputFileName = filepath.Join(dirName, "conversation.txt")
-	}
-
-	return os.WriteFile(outputFileName, []byte(content), 0600)
 }
 
 // DisplayConversationHistory は会話履歴をMarkdown形式で表示します
