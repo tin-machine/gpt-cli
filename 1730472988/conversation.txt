@@ -1,0 +1,170 @@
+標準入力からの入力がある場合とない場合を考慮して、コードを改善する必要があります。その際には、入力の有無を適切に検出し、対応する処理を行うことが重要です。また、エラーハンドリングの強化やテストの追加も重要です。
+
+以下に改善点を示し、コードを修正します。
+
+### 改善点
+
+1. **標準入力の有無の確認**:
+   - 標準入力からの入力がある場合とない場合を明確に区別するため、適切なチェックを実施します。関数のリファクタリングで読みやすさを改善します。
+
+2. **エラーハンドリング**:
+   - 標準入力からの読み込みが失敗した場合のエラーハンドリングを行います。
+
+3. **コードの一貫性**:
+   - 標準入力がない場合のデフォルト動作を明確にします（例えば、ログを出力するなど）。
+
+4. **テストコードの充実**:
+   - 標準入力がある場合とない場合の両方のシナリオをカバーするテストを実装します。
+
+5. **コメントの追加**:
+   - コードの意図が明確になるように、コメントを追加します。
+
+### 改善したコード
+
+#### main.goの修正
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"strings"
+)
+
+var Version string
+
+func main() {
+	if err := Run(); err != nil {
+		log.Fatalf("エラーが発生しました: %v", err)
+	}
+}
+
+func Run() error {
+	// コマンドラインオプションの定義
+	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
+	outputFile := flag.String("o", "", "出力するファイルを指定")
+	systemMessage := flag.String("s", "", "Systemのメッセージを変更")
+	userMessage := flag.String("u", "", "Userのメッセージを変更")
+	imageList := flag.String("i", "", "画像ファイルをカンマ区切りで")
+	configPath := flag.String("c", "", "設定ファイルのパスを指定")
+	model := flag.String("m", "", "使用するモデルを指定")
+	debug := flag.Bool("d", false, "デバッグモードを有効にする")
+	showVersion := flag.Bool("version", false, "バージョン情報を表示")
+	collectFiles := flag.Bool("collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
+	historyFile := flag.String("history", "", "会話履歴の保存ファイルを指定（拡張子は不要）")
+	timeout := flag.Int("t", 60, "タイムアウト時間（秒）を指定")
+	fileList := flag.String("f", "", "読み込むファイルのパスをカンマ区切りで指定")
+	flag.Parse()
+
+	// バージョン情報の処理
+	if *showVersion {
+		fmt.Printf("Version: %s\n", Version)
+		return nil
+	}
+
+	// 標準入力からのデータを読み込む
+	stdinData, err := ReadStdin()
+	if err != nil {
+		return fmt.Errorf("標準入力からの読み込みに失敗しました: %w", err)
+	}
+
+	// 設定ファイルの読み込み
+	configFilePath, err := GetConfigFilePath(*configPath)
+	if err != nil {
+		return err
+	}
+
+	config, err := LoadConfig(configFilePath)
+	if err != nil {
+		return fmt.Errorf("設定ファイルが読み込めません: %w", err)
+	}
+
+	// プロンプトの設定取得
+	promptConfig, err := GetPromptConfig(config, *promptOption, *systemMessage, *userMessage, *model)
+	if err != nil {
+		return err
+	}
+
+	// 標準入力からデータがある場合、ユーザープロンプトに追加
+	if stdinData != "" {
+		promptConfig.User += "\n\n" + stdinData
+	}
+
+	// (以下、残りの処理)
+
+	return nil
+}
+
+// ReadStdin は標準入力からデータを読み込みます
+func ReadStdin() (string, error) {
+	info, err := os.Stdin.Stat()
+	if err != nil {
+		return "", fmt.Errorf("標準入力のステータス確認に失敗しました: %w", err)
+	}
+
+	if info.Mode()&os.ModeCharDevice != 0 {
+		log.Println("標準入力からの入力がありません。続行します。") // 標準入力がないことをログ出力
+		return "", nil
+	}
+
+	var builder strings.Builder
+	if _, err := io.Copy(&builder, os.Stdin); err != nil {
+		return "", fmt.Errorf("標準入力からのコピーに失敗しました: %w", err)
+	}
+
+	return strings.TrimSpace(builder.String()), nil
+}
+```
+
+### テストコードの追加
+
+```go
+package main
+
+import (
+	"io"
+	"os"
+	"strings"
+	"testing"
+)
+
+func TestReadStdinWithInput(t *testing.T) {
+	// 標準入力を差し替えるためのバックアップ
+	oldStdin := os.Stdin
+	defer func() { os.Stdin = oldStdin }()
+
+	inputData := "テスト入力"
+	os.Stdin = io.NopCloser(strings.NewReader(inputData))
+
+	result, err := ReadStdin()
+	if err != nil {
+		t.Fatalf("ReadStdin()がエラーを返しました: %v", err)
+	}
+	if result != inputData {
+		t.Errorf("結果が予期したものと違います。\n期待値：%s\n実際の値：%s", inputData, result)
+	}
+}
+
+func TestReadStdinWithoutInput(t *testing.T) {
+	// 標準入力を一時的にモック
+	oldStdin := os.Stdin
+	defer func() { os.Stdin = oldStdin }()
+
+	// 空のReaderをセットして、標準入力が空であることを模倣
+	os.Stdin = io.NopCloser(strings.NewReader(""))
+
+	result, err := ReadStdin()
+	if err != nil {
+		t.Fatalf("ReadStdin()が予期せぬエラーを返しました: %v", err)
+	}
+	if result != "" {
+		t.Errorf("結果が予期したものと違います。\n期待値：\"\"\n実際の値：%s", result)
+	}
+}
+```
+
+この修正により、標準入力からデータがある場合とない場合の両方で適切に動作し、エラーが発生しても適切に対処することができます。また、テストコードにより、新しい機能を安全に変更できます。

@@ -136,11 +136,11 @@ func Run() error {
 		}
 	}
 
-//	// 出力ファイルの保存
-//	err = SaveOutput(*outputFile, assistantMessage.Content)
-//	if err != nil {
-//		return fmt.Errorf("出力ファイルの保存に失敗しました: %w", err)
-//	}
+	//	// 出力ファイルの保存
+	//	err = SaveOutput(*outputFile, assistantMessage.Content)
+	//	if err != nil {
+	//		return fmt.Errorf("出力ファイルの保存に失敗しました: %w", err)
+	//	}
 
 	// 標準出力に結果を表示
 	fmt.Println(assistantMessage.Content)
