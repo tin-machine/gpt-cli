@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	openai "github.com/sashabaranov/go-openai"
 
@@ -180,7 +179,7 @@ func LoadConversationHistory(filename string) ([]openai.ChatCompletionMessage, e
 // 		}
 // 		outputFileName = filepath.Join(dirName, "conversation.txt")
 // 	}
-// 
+//
 // 	return os.WriteFile(outputFileName, []byte(content), 0600)
 // }
 
