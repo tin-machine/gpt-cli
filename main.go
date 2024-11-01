@@ -18,7 +18,7 @@ func main() {
 func Run() error {
 	// コマンドラインオプションの定義
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
-	outputFile := flag.String("o", "", "出力するファイルを指定")
+	// outputFile := flag.String("o", "", "出力するファイルを指定")
 	systemMessage := flag.String("s", "", "Systemのメッセージを変更")
 	userMessage := flag.String("u", "", "Userのメッセージを変更")
 	imageList := flag.String("i", "", "画像ファイルをカンマ区切りで")
@@ -136,11 +136,11 @@ func Run() error {
 		}
 	}
 
-	// 出力ファイルの保存
-	err = SaveOutput(*outputFile, assistantMessage.Content)
-	if err != nil {
-		return fmt.Errorf("出力ファイルの保存に失敗しました: %w", err)
-	}
+//	// 出力ファイルの保存
+//	err = SaveOutput(*outputFile, assistantMessage.Content)
+//	if err != nil {
+//		return fmt.Errorf("出力ファイルの保存に失敗しました: %w", err)
+//	}
 
 	// 標準出力に結果を表示
 	fmt.Println(assistantMessage.Content)
