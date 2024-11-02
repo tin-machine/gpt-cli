@@ -61,11 +61,11 @@ func Run() error {
 	}
 
 	// フラグ以外の引数を取得
-  args := flag.Args()
-  if len(args) > 0 {
-    // 最後の引数をユーザープロンプトとして設定
-    *userMessage += " " + args[len(args)-1]
-  }
+	args := flag.Args()
+	if len(args) > 0 {
+		// 最後の引数をユーザープロンプトとして設定
+		*userMessage += " " + args[len(args)-1]
+	}
 
 	// プロンプトの設定取得
 	promptConfig, err := GetPromptConfig(config, *promptOption, *systemMessage, *userMessage, *showHistory, *model)
