@@ -18,7 +18,6 @@ func main() {
 func Run() error {
 	// コマンドラインオプションの定義
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
-	// outputFile := flag.String("o", "", "出力するファイルを指定")
 	systemMessage := flag.String("s", "", "Systemのメッセージを変更")
 	userMessage := flag.String("u", "", "Userのメッセージを変更")
 	imageList := flag.String("i", "", "画像ファイルをカンマ区切りで")
@@ -60,7 +59,7 @@ func Run() error {
 	}
 
 	// プロンプトの設定取得
-	promptConfig, err := GetPromptConfig(config, *promptOption, *systemMessage, *userMessage, *model)
+	promptConfig, err := GetPromptConfig(config, *promptOption, *systemMessage, *userMessage, *showHistory, *model)
 	if err != nil {
 		return err
 	}
