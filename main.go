@@ -93,12 +93,11 @@ func Run() error {
 		return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
 	}
 
-
-  if *showHistory != "" {
-	  conversationHistory, err := LoadConversationHistory(*showHistory)
-	  if err != nil {
-	  	return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
-	  }
+	if *showHistory != "" {
+		conversationHistory, err := LoadConversationHistory(*showHistory)
+		if err != nil {
+			return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
+		}
 		if len(conversationHistory) == 0 {
 			fmt.Println("会話履歴はありません。")
 			return nil
@@ -107,15 +106,15 @@ func Run() error {
 		return nil
 	}
 
-//	// -show-history オプションが指定された場合、会話履歴を表示して終了
-//	if *showHistory {
-//		if len(conversationHistory) == 0 {
-//			fmt.Println("会話履歴はありません。")
-//			return nil
-//		}
-//		DisplayConversationHistory(conversationHistory)
-//		return nil
-//	}
+	//	// -show-history オプションが指定された場合、会話履歴を表示して終了
+	//	if *showHistory {
+	//		if len(conversationHistory) == 0 {
+	//			fmt.Println("会話履歴はありません。")
+	//			return nil
+	//		}
+	//		DisplayConversationHistory(conversationHistory)
+	//		return nil
+	//	}
 
 	// メッセージの作成
 	messages, err := CreateMessages(promptConfig)
