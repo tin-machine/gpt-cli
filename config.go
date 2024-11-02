@@ -59,7 +59,7 @@ func GetConfigFilePath(configPath string) (string, error) {
 }
 
 // GetPromptConfig はプロンプトの設定を取得します
-func GetPromptConfig(config Config, promptOption string, systemMessage string, userMessage string, showHistory bool, model string) (Prompt, error) {
+func GetPromptConfig(config Config, promptOption string, systemMessage string, userMessage string, showHistory string, model string) (Prompt, error) {
 	var promptConfig Prompt
 
 	if promptOption != "" {
@@ -68,7 +68,7 @@ func GetPromptConfig(config Config, promptOption string, systemMessage string, u
 		if !ok {
 			return promptConfig, fmt.Errorf("プロンプトオプション %s は設定ファイルに定義されていません", promptOption)
 		}
-	} else if systemMessage == "" && userMessage == "" && !showHistory {
+	} else if systemMessage == "" && userMessage == "" && showHistory != "" {
 		return promptConfig, fmt.Errorf("-p(プロンプトの指定)が無い場合は-s(システムメッセージ)か-u(ユーザーメッセージ)の指定が必要です")
 	}
 
