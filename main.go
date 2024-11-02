@@ -106,16 +106,6 @@ func Run() error {
 		return nil
 	}
 
-	//	// -show-history オプションが指定された場合、会話履歴を表示して終了
-	//	if *showHistory {
-	//		if len(conversationHistory) == 0 {
-	//			fmt.Println("会話履歴はありません。")
-	//			return nil
-	//		}
-	//		DisplayConversationHistory(conversationHistory)
-	//		return nil
-	//	}
-
 	// メッセージの作成
 	messages, err := CreateMessages(promptConfig)
 	if err != nil {

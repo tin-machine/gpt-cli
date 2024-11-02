@@ -32,16 +32,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # バージョンを上げるコミットを作る
-      - name: Read current version
+      - name: バージョンを上げるコミットを作るため、現在のバージョンを読み込む
         id: get_version
         run: |
           VERSION=$(cat VERSION)
           echo "Current version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
 
-      # リリースの際にバージョンを一つ上げるがインクリメント処理
-      - name: Increment version
+      - name: リリースの際にバージョンを一つ上げるインクリメント処理
         id: increment_version
         run: |
           version=${{ env.version }}
@@ -51,12 +49,10 @@ jobs:
           echo "New version: $new_version"
           echo "new_version=$new_version" >> $GITHUB_ENV
 
-      # インクリメントした数字をVERSIONファイルの書き込み
-      - name: Update VERSION file
+      - name: インクリメントした数字をVERSIONファイルの書き込み
         run: echo "${{ env.new_version }}" > VERSION
 
-      # VERSIONファイルをコミットする
-      - name: Commit updated VERSION file
+      - name: VERSIONファイルをコミットする
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -64,11 +60,10 @@ jobs:
           git commit -m "Bump version to ${{ env.new_version }}"
           git push origin main
 
-      # リリース作成とバイナリ添付
-      - name: Download artifacts
+      - name: リリース作成とバイナリ添付
         uses: actions/download-artifact@v4
 
-      - name: Create and Upload Release
+      - name: リリースの作成
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

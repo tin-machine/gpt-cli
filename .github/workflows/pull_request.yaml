@@ -18,16 +18,15 @@ jobs:
         with:
           go-version-file: './go.mod'  # go.modからバージョンを取得
 
-      # Lintチェック
-      - name: Install golint
+      - name: Lintのインストール
         run: |
           go install golang.org/x/lint/golint@latest
           echo "$HOME/go/bin" >> $GITHUB_PATH  # golintのパスを追加
 
-      - name: Run golint
+      - name: golint実行
         run: golint ./...  # プロジェクト全体をLintチェック
 
-      - name: Run gofmt
+      - name: gofmt実行、差分があれば表示
         run: |
           if [ -n "$(gofmt -l .)" ]; then
             echo "Please format your Go code with 'gofmt'."
@@ -35,6 +34,5 @@ jobs:
             exit 1
           fi
 
-      # テスト実行
-      - name: Run Tests
+      - name: テスト実行
         run: go test -v ./...  # 全テストを実行し、詳細な出力を表示
