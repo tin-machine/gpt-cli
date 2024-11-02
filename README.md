@@ -9,24 +9,31 @@ viで書いたテキストを貼り付ける事が多いので、CLIから問い
 go install github.com/tin-machine/gpt-cli@latest
 ```
 
+[環境変数 OPEN_API_KEY にChatGPTのAPIキーを設定してください](https://github.com/tin-machine/gpt-cli/blob/21c4889a98cda54f3dc222bf32c00f02e26a11f0/openai_client.go#L17)
+
 # 使い方
 
 ```
-gpt-cli -p prompt1 -o output.txt
+gpt-cli -p prompt1
 ```
 
 # オプション
 
 取り得るオプションですが
-- `-p`: config.yaml内でベースとなるプロンプトを選択
 - `-s`: システムプロンプトで文字列を与えたい(config.yamlを上書き)
 - `-u`: ユーザープロンプトで文字列を与えたい(config.yamlを上書き)
-- `-i`: イメージファイルをカンマ区切りで与える(config.yamlを上書き)
-- `-a`: 追加する文章へのパスを指定します。
-- `-o`: 出力するファイル名
+- `-p`: config.yaml内でベースとなるプロンプトを選択
+  - `-p` が無い場合は `-s` か `-u` が必要
+- `-i`: イメージファイルをカンマ区切りで与える
+- `-c`: config.yamlのパスを指定
+- `-m`: モデルを指定
 - `-d`: デバックモード
-
-`-p` での指定が無い場合、`-s` か `-u` が必要。
+- `-v`: バージョン
+- `-collect`: 現在のディレクトリ内のファイルをUserプロンプトに追加
+- `-history`: 会話履歴の保存ファイルを指定（拡張子は不要）
+- `-t`: タイムアウト時間（秒）を指定
+- `-f`: 読み込むファイルのパスをカンマ区切りで指定
+- -show-history: 会話履歴を表示
 
 # config.yamlのサンプル
 
@@ -69,27 +76,4 @@ prompts:
       ソースコードを出力する場合、ソースコード全てを出力してください。
     user: |
       -uオプションで必要なソースコードを上書きする
-```
-
-# 手軽にuserプロンプトを生成したい
-
-カレントディレクトリのGolangのファイルをレビューして欲しい場合
-
-file-output.bash みたいなファイルを作成し
-
-```bash
-#!/bin/bash
-
-for file in $(ls *.go) ; do
-  echo -e "${file}の内容です"
-  echo '```golang'
-  cat $file
-  echo -e '```\n'
-done
-```
-
-下記のようにすると手軽にレビューしてもらえます
-
-```
-gpt-cli -p prompt4 -u "$( ./file-output.bash )"  -o prompt3.log
 ```
