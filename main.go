@@ -30,6 +30,8 @@ func Run() error {
 	timeout := flag.Int("t", 60, "タイムアウト時間（秒）を指定")
 	fileList := flag.String("f", "", "読み込むファイルのパスをカンマ区切りで指定")
 	showHistory := flag.String("show-history", "", "会話履歴を表示")
+
+	// フラグの解析
 	flag.Parse()
 
 	// バージョン情報の表示
@@ -57,6 +59,13 @@ func Run() error {
 	if err != nil {
 		return fmt.Errorf("設定ファイルが読み込めません: %w", err)
 	}
+
+	// フラグ以外の引数を取得
+  args := flag.Args()
+  if len(args) > 0 {
+    // 最後の引数をユーザープロンプトとして設定
+    *userMessage += " " + args[len(args)-1]
+  }
 
 	// プロンプトの設定取得
 	promptConfig, err := GetPromptConfig(config, *promptOption, *systemMessage, *userMessage, *showHistory, *model)
