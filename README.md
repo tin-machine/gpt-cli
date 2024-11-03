@@ -13,8 +13,34 @@ go install github.com/tin-machine/gpt-cli@latest
 
 # 使い方
 
+単純に聞くだけの場合
+```
+gpt-cli "こんにちは！"
+```
+
+システムプロンプトとユーザープロンプトを指定している場合
+```
+gpt-cli -s "なるべく陽気に答えてください" -u "こんにちは"
+```
+
+会話ログを-histroyで保存しつつ会話
+```
+gpt-cli -p prompt4 -history gpt-cli改修 -u "何か改修できる点を教えてください"
+```
+
+会話ログを表示
+```
+gpt-cli -show-history gpt-cli改修
+```
+
+下にあるconfig.yamlを設定している場合
 ```
 gpt-cli -p prompt1
+```
+
+ファイルを追加して会話
+```
+gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何か改修できる点を教えてください"
 ```
 
 # オプション
@@ -33,13 +59,20 @@ gpt-cli -p prompt1
 - `-history`: 会話履歴の保存ファイルを指定（拡張子は不要）
 - `-t`: タイムアウト時間（秒）を指定
 - `-f`: 読み込むファイルのパスをカンマ区切りで指定
-- -show-history: 会話履歴を表示
+- `-show-history`: 会話ログを表示
 
 # config.yamlのサンプル
 
 ~/.config/gpt-cli/config.yaml に配置してください
 
+
+autoSaveLogs が true の場合、会話ログを保存します。
+autoSaveLogsがtrueでlogDirを指定しない場合、[環境変数XDG_DATA_HOMEが設定sれている場合は$XDG_DATA_HOME/gpt-cli/、設定されていない場合は$HOME/.local/share/gpt-cli/に保存します。](https://github.com/tin-machine/gpt-cli/blob/c683710784958f33760741fabf3ce4cdbfc76607/utils.go#L183)
+この保存ファイル名は-histroyで指定したファイル名で変更できます。会話の文脈を繋げたい場合は -history で指定した方が会話が繋がります。
+
 ```
+autoSaveLogs: true # 自動的に会話ログを保存するか
+# logDir: "<会話ログを保存するディレクトリ>"
 prompts:
   prompt1:
     model: gpt-4o
