@@ -195,3 +195,12 @@ func EnsureDirectory(path string) error {
 	}
 	return nil
 }
+
+// inputAvailable は標準入力が利用可能かどうかを判断します
+func inputAvailable() bool {
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+	return (stat.Mode() & os.ModeCharDevice) == 0
+}
