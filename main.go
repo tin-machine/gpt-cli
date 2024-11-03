@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -88,6 +91,19 @@ func Run() error {
 	if len(args) > 0 {
 		// 最後の引数をユーザープロンプトとして設定
 		*userMessage += " " + args[len(args)-1]
+	}
+
+	// 標準入力からのデータを取得
+	if inputAvailable() {
+		reader := bufio.NewReader(os.Stdin)
+		inputData, err := io.ReadAll(reader)
+		if err != nil {
+			return fmt.Errorf("標準入力の読み込みに失敗しました: %w", err)
+		}
+		trimmedInput := strings.TrimSpace(string(inputData))
+		if trimmedInput != "" {
+			*userMessage += " " + trimmedInput
+		}
 	}
 
 	// プロンプトの設定取得
