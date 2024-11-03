@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"time"
 )
 
 var Version string
@@ -15,6 +17,7 @@ func main() {
 	}
 }
 
+// Run はプログラムのメイン処理を実行します
 func Run() error {
 	// コマンドラインオプションの定義
 	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
@@ -58,6 +61,26 @@ func Run() error {
 	config, err := LoadConfig(configFilePath)
 	if err != nil {
 		return fmt.Errorf("設定ファイルが読み込めません: %w", err)
+	}
+
+	// 自動保存が有効化されているか確認
+	autoSaveLogs := config.AutoSaveLogs // デフォルトはfalse
+	if !autoSaveLogs {
+		log.Println("AutoSaveLogsが未設定のため、デフォルトでログ自動保存は無効です。")
+	}
+
+	// デフォルトのログディレクトリを設定
+	logDir := GetLogDirectory(config)
+	if logDir == "" {
+		log.Println("LogDirが未設定のため、デフォルトのディレクトリを使用します。")
+	}
+	if err := EnsureDirectory(logDir); err != nil {
+		return fmt.Errorf("ログディレクトリの作成に失敗しました: %w", err)
+	}
+
+	// ログファイル名を自動生成
+	if *historyFile == "" && autoSaveLogs {
+		*historyFile = filepath.Join(logDir, fmt.Sprintf("log_%s.json", time.Now().Format("20060102_150405.000")))
 	}
 
 	// フラグ以外の引数を取得

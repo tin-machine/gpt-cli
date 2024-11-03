@@ -16,7 +16,9 @@ type Prompt struct {
 }
 
 type Config struct {
-	Prompts map[string]Prompt `yaml:"prompts"`
+	LogDir       string            `yaml:"logDir"`
+	AutoSaveLogs bool              `yaml:"autoSaveLogs"`
+	Prompts      map[string]Prompt `yaml:"prompts"`
 }
 
 // LoadConfig は指定されたファイルパスから設定を読み込みます
