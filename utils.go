@@ -174,3 +174,24 @@ func DisplayConversationHistory(history []openai.ChatCompletionMessage) {
 		fmt.Printf("### %s\n\n%s\n\n", role, message.Content)
 	}
 }
+
+// GetLogDirectory は設定ファイルや環境変数に基づいてログの保存ディレクトリを取得します
+func GetLogDirectory(config Config) string {
+	if config.LogDir != "" {
+		return config.LogDir
+	}
+	// 環境変数XDG_DATA_HOMEを確認
+	if dataHome := os.Getenv("XDG_DATA_HOME"); dataHome != "" {
+		return filepath.Join(dataHome, "gpt-cli", "logs")
+	}
+	// デフォルトのログパスを使用
+	return filepath.Join(os.Getenv("HOME"), ".local", "share", "gpt-cli", "logs")
+}
+
+// EnsureDirectory は指定されたディレクトリパスが存在するか確認し、存在しない場合は作成しま
+func EnsureDirectory(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return os.MkdirAll(path, 0700)
+	}
+	return nil
+}
