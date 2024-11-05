@@ -63,7 +63,7 @@ func Run() error {
 	// 設定ファイルの読み込み
 	config, err := LoadConfig(configFilePath)
 	if err != nil {
-		return fmt.Errorf("設定ファイルが読み込めません: %w", err)
+		log.Printf("設定ファイルが読み込めません (%v)。デフォルト設定を使用します。", err)
 	}
 
 	// 自動保存が有効化されているか確認
@@ -74,9 +74,6 @@ func Run() error {
 
 	// デフォルトのログディレクトリを設定
 	logDir := GetLogDirectory(config)
-	if logDir == "" {
-		log.Println("LogDirが未設定のため、デフォルトのディレクトリを使用します。")
-	}
 	if err := EnsureDirectory(logDir); err != nil {
 		return fmt.Errorf("ログディレクトリの作成に失敗しました: %w", err)
 	}
@@ -84,6 +81,11 @@ func Run() error {
 	// ログファイル名を自動生成
 	if *historyFile == "" && autoSaveLogs {
 		*historyFile = filepath.Join(logDir, fmt.Sprintf("log_%s.json", time.Now().Format("20060102_150405.000")))
+	}
+
+	// historyFileのフルパスをLogDirに基づいて設定
+	if *historyFile != "" {
+		*historyFile = filepath.Join(logDir, *historyFile)
 	}
 
 	// フラグ以外の引数を取得
