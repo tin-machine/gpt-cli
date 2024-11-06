@@ -13,6 +13,7 @@ import (
 // デフォルトのモデル名を設定
 const defaultModel = "gpt-3.5-turbo"
 
+// NewOpenAIClient はOpenAI APIキーとタイムアウトを使用して新しいクライアントを初期化します
 func NewOpenAIClient(timeout int) (*openai.Client, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
@@ -32,6 +33,7 @@ func NewOpenAIClient(timeout int) (*openai.Client, error) {
 	return client, nil
 }
 
+// ExecuteChatCompletion はOpenAI APIにリクエストを送り、アシスタントの応答を取得します
 func ExecuteChatCompletion(client *openai.Client, model string, conversationHistory []openai.ChatCompletionMessage) (openai.ChatCompletionMessage, error) {
 	ctx := context.Background()
 
@@ -43,7 +45,7 @@ func ExecuteChatCompletion(client *openai.Client, model string, conversationHist
 		},
 	)
 	if err != nil {
-		return openai.ChatCompletionMessage{}, err
+		return openai.ChatCompletionMessage{}, fmt.Errorf("ChatCompletionエラー: %w", err)
 	}
 
 	assistantMessage := resp.Choices[0].Message

@@ -115,20 +115,28 @@ func imageToBase64(path string) (string, string, error) {
 
 	// ファイル拡張子からMIMEタイプを推測
 	ext := strings.ToLower(filepath.Ext(path))
-	mimeType := ""
-	switch ext {
-	case ".jpg", ".jpeg":
-		mimeType = "image/jpeg"
-	case ".png":
-		mimeType = "image/png"
-	case ".gif":
-		mimeType = "image/gif"
-	default:
+	mimeType := getMimeType(ext)
+
+	if mimeType == "" {
 		return "", "", fmt.Errorf("サポートされていない画像形式: %s", ext)
 	}
 
 	base64Image := base64.StdEncoding.EncodeToString(data)
 	return base64Image, mimeType, nil
+}
+
+// getMimeType はファイル拡張子に基づいてMIMEタイプを返します
+func getMimeType(ext string) string {
+	switch ext {
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".png":
+		return "image/png"
+	case ".gif":
+		return "image/gif"
+	default:
+		return ""
+	}
 }
 
 // SaveConversationHistory は会話履歴をファイルに保存します
