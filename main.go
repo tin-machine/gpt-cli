@@ -78,14 +78,14 @@ func Run() error {
 		return fmt.Errorf("ログディレクトリの作成に失敗しました: %w", err)
 	}
 
-	// ログファイル名を自動生成
-	if *historyFile == "" && autoSaveLogs {
-		*historyFile = filepath.Join(logDir, fmt.Sprintf("log_%s.json", time.Now().Format("20060102_150405.000")))
-	}
-
 	// historyFileのフルパスをLogDirに基づいて設定
 	if *historyFile != "" {
 		*historyFile = filepath.Join(logDir, *historyFile)
+	}
+
+	// ログファイル名を自動生成
+	if *historyFile == "" && autoSaveLogs {
+		*historyFile = filepath.Join(logDir, fmt.Sprintf("log_%s.json", time.Now().Format("20060102_150405.000")))
 	}
 
 	// フラグ以外の引数を取得
@@ -144,6 +144,8 @@ func Run() error {
 	}
 
 	if *showHistory != "" {
+		// showHistoryのフルパスをLogDirに基づいて設定
+		*showHistory = filepath.Join(logDir, *showHistory)
 		conversationHistory, err := LoadConversationHistory(*showHistory)
 		if err != nil {
 			return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
