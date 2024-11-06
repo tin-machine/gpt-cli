@@ -54,22 +54,24 @@ func Run() error {
 		log.SetOutput(os.Stderr)
 	}
 
+	// デフォルト設定の定義
+	defaultConfig := Config{
+		LogDir:       "",
+		AutoSaveLogs: false,
+		Prompts:      make(map[string]Prompt),
+	}
+
 	// 設定ファイルのパスを取得
 	configFilePath, err := GetConfigFilePath(*configPath)
 	if err != nil {
-		return err
+		log.Println("設定ファイルを使用しません。デフォルト設定で実行します。")
 	}
 
 	// 設定ファイルの読み込み
 	config, err := LoadConfig(configFilePath)
 	if err != nil {
 		log.Printf("設定ファイルが読み込めません (%v)。デフォルト設定を使用します。", err)
-	}
-
-	// 自動保存が有効化されているか確認
-	autoSaveLogs := config.AutoSaveLogs // デフォルトはfalse
-	if !autoSaveLogs {
-		log.Println("AutoSaveLogsが未設定のため、デフォルトでログ自動保存は無効です。")
+		config = defaultConfig // 設定ファイルが読み込めない場合、デフォルト設定を使用
 	}
 
 	// デフォルトのログディレクトリを設定
@@ -84,7 +86,7 @@ func Run() error {
 	}
 
 	// ログファイル名を自動生成
-	if *historyFile == "" && autoSaveLogs {
+	if *historyFile == "" && config.AutoSaveLogs {
 		*historyFile = filepath.Join(logDir, fmt.Sprintf("log_%s.json", time.Now().Format("20060102_150405.000")))
 	}
 
