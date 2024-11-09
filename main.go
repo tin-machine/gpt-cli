@@ -1,15 +1,8 @@
 package main
 
 import (
-	"bufio"
-	"flag"
 	"fmt"
-	"io"
 	"log"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 var Version string
@@ -22,157 +15,71 @@ func main() {
 
 // Run はプログラムのメイン処理を実行します
 func Run() error {
-	// コマンドラインオプションの定義
-	promptOption := flag.String("p", "", "config.yamlにあるプロンプトを選択")
-	systemMessage := flag.String("s", "", "Systemのメッセージを変更")
-	userMessage := flag.String("u", "", "Userのメッセージを変更")
-	imageList := flag.String("i", "", "画像ファイルをカンマ区切りで")
-	configPath := flag.String("c", "", "設定ファイルのパスを指定")
-	model := flag.String("m", "", "使用するモデルを指定")
-	debug := flag.Bool("d", false, "デバッグモードを有効にする")
-	showVersion := flag.Bool("version", false, "バージョン情報を表示")
-	collectFiles := flag.Bool("collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
-	historyFile := flag.String("history", "", "会話履歴の保存ファイルを指定（拡張子は不要）")
-	timeout := flag.Int("t", 60, "タイムアウト時間（秒）を指定")
-	fileList := flag.String("f", "", "読み込むファイルのパスをカンマ区切りで指定")
-	showHistory := flag.String("show-history", "", "会話履歴を表示")
 
-	// フラグの解析
-	flag.Parse()
-
-	// バージョン情報の表示
-	if *showVersion {
-		fmt.Printf("Version: %s\n", Version)
-		return nil
-	}
-
-	// ログレベルの設定
-	if *debug {
-		log.SetFlags(log.LstdFlags | log.Lshortfile)
-	} else {
-		log.SetFlags(0)
-		log.SetOutput(os.Stderr)
-	}
-
-	// デフォルト設定の定義
-	defaultConfig := Config{
-		LogDir:       "",
-		AutoSaveLogs: false,
-		Prompts:      make(map[string]Prompt),
-	}
-
-	// 設定ファイルのパスを取得
-	configFilePath, err := GetConfigFilePath(*configPath)
-	if err != nil {
-		log.Println("設定ファイルを使用しません。デフォルト設定で実行します。")
-	}
-
-	// 設定ファイルの読み込み
-	config, err := LoadConfig(configFilePath)
-	if err != nil {
-		log.Printf("設定ファイルが読み込めません (%v)。デフォルト設定を使用します。", err)
-		config = defaultConfig // 設定ファイルが読み込めない場合、デフォルト設定を使用
-	}
-
-	// デフォルトのログディレクトリを設定
-	logDir := GetLogDirectory(config)
-	if err := EnsureDirectory(logDir); err != nil {
-		return fmt.Errorf("ログディレクトリの作成に失敗しました: %w", err)
-	}
-
-	// historyFileのフルパスをLogDirに基づいて設定
-	if *historyFile != "" {
-		*historyFile = filepath.Join(logDir, *historyFile)
-	}
-
-	// ログファイル名を自動生成
-	if *historyFile == "" && config.AutoSaveLogs {
-		*historyFile = filepath.Join(logDir, fmt.Sprintf("log_%s.json", time.Now().Format("20060102_150405.000")))
-	}
-
-	// フラグ以外の引数を取得
-	args := flag.Args()
-	if len(args) > 0 {
-		// 最後の引数をユーザープロンプトとして設定
-		*userMessage += " " + args[len(args)-1]
-	}
-
-	// 標準入力からのデータを取得
-	if inputAvailable() {
-		reader := bufio.NewReader(os.Stdin)
-		inputData, err := io.ReadAll(reader)
-		if err != nil {
-			return fmt.Errorf("標準入力の読み込みに失敗しました: %w", err)
-		}
-		trimmedInput := strings.TrimSpace(string(inputData))
-		if trimmedInput != "" {
-			*userMessage += " " + trimmedInput
-		}
-	}
-
-	// プロンプトの設定取得
-	promptConfig, err := GetPromptConfig(config, *promptOption, *systemMessage, *userMessage, *showHistory, *model)
+	// コマンドライン引数の解析
+	options, err := ParseCommandLineArgs()
 	if err != nil {
 		return err
 	}
 
-	// 画像リストの処理
-	if *imageList != "" {
-		promptConfig.Attachments = SplitImageList(*imageList)
-	}
-
-	// -collect オプションが指定された場合、ファイルを収集
-	if *collectFiles {
-		filesContent, err := CollectFiles(".")
-		if err != nil {
-			return fmt.Errorf("ファイルの収集に失敗しました: %w", err)
-		}
-		promptConfig.User += "\n\n" + filesContent
-	}
-
-	// -f オプションが指定された場合、ファイルを読み込む
-	if *fileList != "" {
-		filesContent, err := ReadFiles(*fileList)
-		if err != nil {
-			return fmt.Errorf("ファイルの読み込みに失敗しました: %w", err)
-		}
-		promptConfig.User += "\n\n" + filesContent
-	}
-
-	// 会話履歴の読み込み
-	conversationHistory, err := LoadConversationHistory(*historyFile)
-	if err != nil {
-		return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
-	}
-
-	if *showHistory != "" {
-		// showHistoryのフルパスをLogDirに基づいて設定
-		*showHistory = filepath.Join(logDir, *showHistory)
-		conversationHistory, err := LoadConversationHistory(*showHistory)
-		if err != nil {
-			return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
-		}
-		if len(conversationHistory) == 0 {
-			fmt.Println("会話履歴はありません。")
-			return nil
-		}
-		DisplayConversationHistory(conversationHistory)
+	// バージョン情報の表示
+	if options.ShowVersion {
+		fmt.Printf("Version: %s\n", Version)
 		return nil
 	}
 
-	// メッセージの作成
+	// ロギングの設定
+	SetupLogging(options.Debug)
+
+	// 設定ファイルの読み込み
+	config, err := LoadConfiguration(options.ConfigPath)
+	if err != nil {
+		return err
+	}
+
+	// ログディレクトリの設定と検証
+	err = ConfigureLogDirectory(&options, config)
+	if err != nil {
+		return err
+	}
+
+	// ユーザーメッセージの構築
+	err = BuildUserMessage(&options)
+	if err != nil {
+		return err
+	}
+
+	// プロンプト設定の取得
+	promptConfig, err := GetPromptConfig(config, options)
+	if err != nil {
+		return err
+	}
+
+	// コンテキストメッセージの作成
 	messages, err := CreateMessages(promptConfig)
 	if err != nil {
 		return fmt.Errorf("メッセージの作成に失敗しました: %w", err)
 	}
 
-	// 会話履歴にメッセージを追加
+	// 会話履歴の読み込み
+	conversationHistory, err := LoadConversationHistory(options.HistoryFile)
+	if err != nil {
+		return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
+	}
+
+	// show-history オプションの処理
+	if options.ShowHistory != "" {
+		DisplayConversationHistory(conversationHistory)
+		return nil
+	}
+
+	// 会話履歴に新しいメッセージを追加
 	conversationHistory = append(conversationHistory, messages...)
 
 	// OpenAI API クライアントの初期化
-	client, err := NewOpenAIClient(*timeout)
+	client, err := NewOpenAIClient(options.Timeout)
 	if err != nil {
-		return fmt.Errorf("OpenAIクライアントの初期化に失敗しました: %w", err)
+		return err
 	}
 
 	// OpenAI API へのリクエスト
@@ -185,8 +92,8 @@ func Run() error {
 	conversationHistory = append(conversationHistory, assistantMessage)
 
 	// 会話履歴の保存
-	if *historyFile != "" {
-		err = SaveConversationHistory(*historyFile, conversationHistory)
+	if options.HistoryFile != "" {
+		err = SaveConversationHistory(options.HistoryFile, conversationHistory)
 		if err != nil {
 			return fmt.Errorf("会話履歴の保存に失敗しました: %w", err)
 		}
