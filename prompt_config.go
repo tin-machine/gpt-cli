@@ -14,8 +14,6 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 		if !ok {
 			return promptConfig, fmt.Errorf("プロンプトオプション %s は設定ファイルに定義されていません", options.PromptOption)
 		}
-	} else if options.SystemMessage == "" && options.UserMessage == "" && options.ShowHistory == "" {
-		return promptConfig, fmt.Errorf("-p(プロンプトの指定)が無い場合は-s(システムメッセージ)か-u(ユーザーメッセージ)の指定が必要です")
 	}
 
 	// コマンドライン引数からの上書き

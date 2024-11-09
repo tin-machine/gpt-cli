@@ -3,7 +3,7 @@ module github.com/tin-machine/gpt-cli
 go 1.22
 
 require (
-	github.com/sashabaranov/go-openai v1.25.0
+	github.com/sashabaranov/go-openai v1.35.6
 	gopkg.in/yaml.v2 v2.4.0
 )
 
