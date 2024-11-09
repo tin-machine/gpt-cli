@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 var Version string
@@ -88,6 +89,92 @@ func Run() error {
 	client, err := NewOpenAIClient(options.Timeout)
 	if err != nil {
 		return err
+	}
+
+	// ファイルのアップロード
+	if options.UploadFilePath != "" {
+		// ファイルの存在チェック
+		if _, err := os.Stat(options.UploadFilePath); os.IsNotExist(err) {
+			return fmt.Errorf("指定されたファイルが見つかりません: %s", options.UploadFilePath)
+		}
+
+		// UploadFile 関数を呼び出す
+		uploadedFile, err := UploadFile(client, options.UploadFilePath, options.UploadPurpose)
+		if err != nil {
+			return fmt.Errorf("ファイルのアップロードに失敗しました: %v", err)
+		}
+		fmt.Printf("ファイルがアップロードされました。File ID: %s\n", uploadedFile.ID)
+		return nil // ファイルのアップロード後にプログラムを終了
+	}
+
+	// ファイル一覧表示の処理
+	if options.ListFiles {
+		files, err := ListUploadedFiles(client)
+		if err != nil {
+			return fmt.Errorf("ファイル一覧の取得に失敗しました: %v", err)
+		}
+		fmt.Println("アップロードされたファイル一覧:")
+		for _, file := range files.Files {
+			fmt.Printf("- ID: %s, 名前: %s, ステータス: %s\n", file.ID, file.FileName, file.Status)
+		}
+		return nil
+	}
+
+	// ファイル削除の処理
+	if options.DeleteFileID != "" {
+		err := DeleteUploadedFile(client, options.DeleteFileID)
+		if err != nil {
+			return fmt.Errorf("ファイルの削除に失敗しました: %v", err)
+		}
+		fmt.Printf("ファイルを削除しました。File ID: %s\n", options.DeleteFileID)
+		return nil
+	}
+
+	// ベクトルストアのアクションを処理
+	if options.VectorStoreAction != "" {
+		switch options.VectorStoreAction {
+		case "create":
+			if options.VectorStoreName == "" {
+				return fmt.Errorf("ベクトルストアの名前を指定してください (--vector-store-name)")
+			}
+			vs, err := CreateVectorStore(client, options.VectorStoreName)
+			if err != nil {
+				return fmt.Errorf("ベクトルストアの作成に失敗しました: %v", err)
+			}
+			fmt.Printf("ベクトルストアを作成しました: ID=%s, Name=%s\n", vs.ID, vs.Name)
+			return nil
+		case "list":
+			vsList, err := ListVectorStores(client)
+			if err != nil {
+				return fmt.Errorf("ベクトルストアの一覧取得に失敗しました: %v", err)
+			}
+			for _, vs := range vsList {
+				fmt.Printf("ID: %s, Name: %s, Status: %s\n", vs.ID, vs.Name, vs.Status)
+			}
+			return nil
+		case "delete":
+			if options.VectorStoreID == "" {
+				return fmt.Errorf("削除するベクトルストアのIDを指定してください (--vector-store-id)")
+			}
+			err := DeleteVectorStore(client, options.VectorStoreID)
+			if err != nil {
+				return fmt.Errorf("ベクトルストアの削除に失敗しました: %v", err)
+			}
+			fmt.Printf("ベクトルストアを削除しました: ID=%s\n", options.VectorStoreID)
+			return nil
+		case "add-file":
+			if options.VectorStoreID == "" || options.FileID == "" {
+				return fmt.Errorf("ベクトルストアIDとファイルIDを指定してください (--vector-store-id, --file-id)")
+			}
+			vsFile, err := AddFileToVectorStore(client, options.VectorStoreID, options.FileID)
+			if err != nil {
+				return fmt.Errorf("ファイルの追加に失敗しました: %v", err)
+			}
+			fmt.Printf("ファイルをベクトルストアに追加しました: FileID=%s, VectorStoreID=%s\n", vsFile.ID, vsFile.VectorStoreID)
+			return nil
+		default:
+			return fmt.Errorf("不正なベクトルストアアクションが指定されました: %s", options.VectorStoreAction)
+		}
 	}
 
 	// OpenAI API へのリクエスト

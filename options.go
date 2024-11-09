@@ -16,20 +16,28 @@ import (
 
 // Options はコマンドライン引数から取得するオプションを保持します
 type Options struct {
-	PromptOption  string
-	SystemMessage string
-	UserMessage   string
-	ImageList     string
-	ConfigPath    string
-	Model         string
-	Debug         bool
-	ShowVersion   bool
-	CollectFiles  bool
-	HistoryFile   string
-	Timeout       int
-	FileList      string
-	ShowHistory   string
-	Args          []string
+	PromptOption      string
+	SystemMessage     string
+	UserMessage       string
+	ImageList         string
+	ConfigPath        string
+	Model             string
+	Debug             bool
+	ShowVersion       bool
+	CollectFiles      bool
+	HistoryFile       string
+	ListFiles         bool
+	Timeout           int
+	FileList          string
+	ShowHistory       string
+	VectorStoreAction string
+	VectorStoreName   string
+	VectorStoreID     string
+	FileID            string
+	UploadFilePath    string
+	UploadPurpose     string
+	DeleteFileID      string
+	Args              []string
 }
 
 // ParseCommandLineArgs はコマンドライン引数を解析します
@@ -49,6 +57,14 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.IntVar(&options.Timeout, "t", 60, "タイムアウト時間（秒）を指定")
 	flag.StringVar(&options.FileList, "f", "", "読み込むファイルのパスをカンマ区切りで指定")
 	flag.StringVar(&options.ShowHistory, "show-history", "", "会話履歴を表示")
+	flag.StringVar(&options.VectorStoreAction, "vector-store-action", "", "ベクトルストアのアクションを指定（create, list, delete, add-file）")
+	flag.StringVar(&options.VectorStoreName, "vector-store-name", "", "作成するベクトルストアの名前を指定")
+	flag.StringVar(&options.VectorStoreID, "vector-store-id", "", "操作するベクトルストアのIDを指定")
+	flag.StringVar(&options.FileID, "file-id", "", "ベクトルストアに追加するファイルのIDを指定")
+	flag.StringVar(&options.UploadFilePath, "upload-file", "", "OpenAIにアップロードするファイルのパスを指定")
+	flag.StringVar(&options.UploadPurpose, "upload-purpose", "fine-tune", "ファイルのアップロード目的を指定（例: fine-tune, answers）")
+	flag.BoolVar(&options.ListFiles, "list-files", false, "アップロードしたファイルの一覧を表示")
+	flag.StringVar(&options.DeleteFileID, "delete-file", "", "削除するファイルのIDを指定")
 
 	flag.Parse()
 
