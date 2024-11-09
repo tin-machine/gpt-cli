@@ -69,6 +69,14 @@ func Run() error {
 
 	// show-history オプションの処理
 	if options.ShowHistory != "" {
+		conversationHistory, err := LoadConversationHistory(options.ShowHistory)
+		if err != nil {
+			return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
+		}
+		if len(conversationHistory) == 0 {
+			fmt.Println("会話履歴はありません。")
+			return nil
+		}
 		DisplayConversationHistory(conversationHistory)
 		return nil
 	}
