@@ -55,3 +55,24 @@ func DeleteUploadedFile(client *openai.Client, fileID string) error {
 	}
 	return nil
 }
+
+// UploadFiles は複数のファイルをOpenAIにアップロードし、そのファイルIDのスライスを返します
+func UploadFiles(client *openai.Client, filePaths []string, purpose string) ([]string, error) {
+	var fileIDs []string
+	for _, filePath := range filePaths {
+		// ファイルの存在確認
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			return nil, fmt.Errorf("指定されたファイルが見つかりません: %s", filePath)
+		}
+
+		// ファイルをアップロード
+		uploadedFile, err := UploadFile(client, filePath, purpose)
+		if err != nil {
+			return nil, fmt.Errorf("ファイルのアップロードに失敗しました (%s): %v", filePath, err)
+		}
+		fmt.Printf("ファイルがアップロードされました。File ID: %s\n", uploadedFile.ID)
+		// ファイルIDを収集
+		fileIDs = append(fileIDs, uploadedFile.ID)
+	}
+	return fileIDs, nil
+}

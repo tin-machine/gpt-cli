@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 var Version string
@@ -91,6 +92,35 @@ func Run() error {
 		return err
 	}
 
+	// --upload-and-add-to-vector オプションの処理
+	if len(options.UploadAndAddFiles) > 0 {
+		// ファイルをアップロード
+		fileIDs, err := UploadFiles(client, options.UploadAndAddFiles, options.UploadPurpose)
+		if err != nil {
+			return err
+		}
+
+		// VectorStoreの取得または作成
+		vectorStoreName := options.VectorStoreName
+		if vectorStoreName == "" {
+			vectorStoreName = fmt.Sprintf("Auto-Generated Vector Store %d", time.Now().Unix())
+		}
+		vectorStore, err := GetOrCreateVectorStore(client, vectorStoreName)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("使用するベクトルストア: ID=%s, Name=%s\n", vectorStore.ID, vectorStore.Name)
+
+		// ファイルをVectorStoreに追加
+		err = AddFilesToVectorStore(client, vectorStore.ID, fileIDs)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("ファイルをベクトルストアに追加しました: VectorStoreID=%s\n", vectorStore.ID)
+
+		return nil // 処理が完了したので終了
+	}
+
 	// ファイルのアップロード
 	if options.UploadFilePath != "" {
 		// ファイルの存在チェック
@@ -163,14 +193,26 @@ func Run() error {
 			fmt.Printf("ベクトルストアを削除しました: ID=%s\n", options.VectorStoreID)
 			return nil
 		case "add-file":
-			if options.VectorStoreID == "" || options.FileID == "" {
-				return fmt.Errorf("ベクトルストアIDとファイルIDを指定してください (--vector-store-id, --file-id)")
+			if options.VectorStoreID == "" || (options.FileID == "" && len(options.FileIDs) == 0) {
+				return fmt.Errorf("ベクトルストアIDとファイルIDを指定してください (--vector-store-id, --file-id または --file-ids)")
 			}
-			vsFile, err := AddFileToVectorStore(client, options.VectorStoreID, options.FileID)
-			if err != nil {
-				return fmt.Errorf("ファイルの追加に失敗しました: %v", err)
+			if options.FileID != "" {
+				// 単一のファイルIDを処理
+				vsFile, err := AddFileToVectorStore(client, options.VectorStoreID, options.FileID)
+				if err != nil {
+					return fmt.Errorf("ファイルの追加に失敗しました: %v", err)
+				}
+				fmt.Printf("ファイルをベクトルストアに追加しました: FileID=%s, VectorStoreID=%s\n", vsFile.ID, vsFile.VectorStoreID)
+			} else if len(options.FileIDs) > 0 {
+				// 複数のファイルIDを処理
+				err := AddFilesToVectorStore(client, options.VectorStoreID, options.FileIDs)
+				if err != nil {
+					return fmt.Errorf("複数ファイルの追加に失敗しました: %v", err)
+				}
+				fmt.Printf("%d 個のファイルをベクトルストアに追加しました: VectorStoreID=%s\n", len(options.FileIDs), options.VectorStoreID)
+			} else {
+				return fmt.Errorf("ファイルIDを指定してください (--file-id または --file-ids)")
 			}
-			fmt.Printf("ファイルをベクトルストアに追加しました: FileID=%s, VectorStoreID=%s\n", vsFile.ID, vsFile.VectorStoreID)
 			return nil
 		default:
 			return fmt.Errorf("不正なベクトルストアアクションが指定されました: %s", options.VectorStoreAction)
