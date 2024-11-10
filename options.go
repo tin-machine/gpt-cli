@@ -16,28 +16,32 @@ import (
 
 // Options はコマンドライン引数から取得するオプションを保持します
 type Options struct {
-	PromptOption      string
-	SystemMessage     string
-	UserMessage       string
-	ImageList         string
-	ConfigPath        string
-	Model             string
-	Debug             bool
-	ShowVersion       bool
-	CollectFiles      bool
-	HistoryFile       string
-	ListFiles         bool
-	Timeout           int
-	FileList          string
-	ShowHistory       string
-	VectorStoreAction string
-	VectorStoreName   string
-	VectorStoreID     string
-	FileID            string
-	UploadFilePath    string
-	UploadPurpose     string
-	DeleteFileID      string
-	Args              []string
+	PromptOption         string
+	SystemMessage        string
+	UserMessage          string
+	ImageList            string
+	ConfigPath           string
+	Model                string
+	Debug                bool
+	ShowVersion          bool
+	CollectFiles         bool
+	HistoryFile          string
+	ListFiles            bool
+	Timeout              int
+	FileList             string
+	ShowHistory          string
+	VectorStoreAction    string
+	VectorStoreName      string
+	VectorStoreID        string
+	FileID               string
+	FileIDsStr           string
+	FileIDs              []string
+	UploadFilePath       string
+	UploadPurpose        string
+	DeleteFileID         string
+	UploadAndAddFilesStr string
+	UploadAndAddFiles    []string
+	Args                 []string
 }
 
 // ParseCommandLineArgs はコマンドライン引数を解析します
@@ -61,14 +65,32 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.VectorStoreName, "vector-store-name", "", "作成するベクトルストアの名前を指定")
 	flag.StringVar(&options.VectorStoreID, "vector-store-id", "", "操作するベクトルストアのIDを指定")
 	flag.StringVar(&options.FileID, "file-id", "", "ベクトルストアに追加するファイルのIDを指定")
+	flag.StringVar(&options.FileIDsStr, "file-ids", "", "ベクトルストアに追加するファイルのIDをカンマ区切りで指定")
 	flag.StringVar(&options.UploadFilePath, "upload-file", "", "OpenAIにアップロードするファイルのパスを指定")
 	flag.StringVar(&options.UploadPurpose, "upload-purpose", "fine-tune", "ファイルのアップロード目的を指定（例: fine-tune, answers）")
 	flag.BoolVar(&options.ListFiles, "list-files", false, "アップロードしたファイルの一覧を表示")
 	flag.StringVar(&options.DeleteFileID, "delete-file", "", "削除するファイルのIDを指定")
+	flag.StringVar(&options.UploadAndAddFilesStr, "upload-and-add-to-vector", "", "アップロードするファイルのパスをカンマ区切りで指定し、自動的にベクトルストアに追加")
 
 	flag.Parse()
 
 	options.Args = flag.Args()
+
+	// アップロードするファイルのリストをパース
+	if options.UploadAndAddFilesStr != "" {
+		options.UploadAndAddFiles = strings.Split(options.UploadAndAddFilesStr, ",")
+		for i := range options.UploadAndAddFiles {
+			options.UploadAndAddFiles[i] = strings.TrimSpace(options.UploadAndAddFiles[i])
+		}
+	}
+
+	// FileIDsStrを分割してFileIDsに設定
+	if options.FileIDsStr != "" {
+		options.FileIDs = strings.Split(options.FileIDsStr, ",")
+		for i := range options.FileIDs {
+			options.FileIDs[i] = strings.TrimSpace(options.FileIDs[i])
+		}
+	}
 
 	return options, nil
 }
