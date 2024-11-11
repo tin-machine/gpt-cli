@@ -11,36 +11,70 @@ go install github.com/tin-machine/gpt-cli@latest
 
 [環境変数 OPEN_API_KEY にChatGPTのAPIキーを設定してください](https://github.com/tin-machine/gpt-cli/blob/21c4889a98cda54f3dc222bf32c00f02e26a11f0/openai_client.go#L17)
 
+```bash
+export OPENAI_API_KEY="your-api-key-here"
+```
+
 # 使い方
 
-単純に聞くだけの場合
+- **単純に聞くだけの場合**:
 ```
 gpt-cli "こんにちは！"
 ```
 
-システムプロンプトとユーザープロンプトを指定している場合
+- **システムプロンプトとユーザープロンプトを指定している場合**:
 ```
 gpt-cli -s "なるべく陽気に答えてください" -u "こんにちは"
 ```
 
-会話ログを-histroyで保存しつつ会話
+- **会話ログを-histroyで保存しつつ会話**:
 ```
 gpt-cli -p prompt4 -history gpt-cli改修 -u "何か改修できる点を教えてください"
 ```
 
-会話ログを表示
+- **会話ログを表示**:
 ```
 gpt-cli -show-history gpt-cli改修
 ```
 
-下にあるconfig.yamlを設定している場合
+- **下に記載しているconfig.yamlを設定している場合**:
 ```
 gpt-cli -p prompt1
 ```
 
-ファイルを追加して会話
+- **ファイルを追加して会話**:
 ```
 gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何か改修できる点を教えてください"
+```
+
+- **ベクトルストアを作成する例**:
+
+```bash
+gpt-cli --vector-store-action create --vector-store-name "my_vector_store"
+```
+
+- **ベクトルストアの一覧を表示する例**:
+
+```bash
+gpt-cli --vector-store-action list
+```
+
+- **ファイルをアップロードする例**:
+
+```bash
+gpt-cli --upload-file "path/to/file.txt" --upload-purpose "fine-tune"
+```
+
+- **アシスタントを作成する例**:
+
+```bash
+gpt-cli --create-assistant --assistant-name "MyAssistant" --instruction "あなたはユーザーを助けるアシスタントです。"
+```
+
+- **アシスタントと対話する例**:
+
+```bash
+gpt-cli --assistant-id "assistant_id" --message "こんにちは！"
 ```
 
 # オプション
@@ -60,6 +94,22 @@ gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何�
 - `-t`: タイムアウト時間（秒）を指定
 - `-f`: 読み込むファイルのパスをカンマ区切りで指定
 - `-show-history`: 会話ログを表示
+- `--vector-store-action`: ベクトルストアのアクションを指定（`create`、`list`、`delete`、`add-file`）。
+- `--vector-store-name`: 作成または操作するベクトルストアの名前を指定。
+- `--vector-store-id`: 操作するベクトルストアのIDを指定。
+- `--upload-file`: OpenAIにアップロードするファイルのパスを指定。
+- `--upload-purpose`: ファイルのアップロード目的を指定（例：`fine-tune`など）。
+- `--list-files`: アップロードしたファイルの一覧を表示。
+- `--delete-file`: 削除するファイルのIDを指定。
+- `--upload-and-add-to-vector`: ファイルをアップロードし、ベクトルストアに追加。
+- `--assistant-id`: 操作するアシスタントのIDを指定。
+- `--create-assistant`: 新しいアシスタントを作成。
+- `--assistant-name`: アシスタントの名前を指定。
+- `--assistant-description`: アシスタントの説明を指定。
+- `--instruction`: アシスタントへの指示を指定。
+- `--message`: アシスタントに送信するメッセージを指定。
+- `--file-id`: ベクトルストアに追加するファイルのIDを指定。
+- `--file-ids`: ベクトルストアに追加するファイルのIDをカンマ区切りで指定。
 
 # config.yamlのサンプル
 
