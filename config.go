@@ -13,7 +13,7 @@ type Prompt struct {
 	System      string   `yaml:"system"`
 	User        string   `yaml:"user"`
 	Attachments []string `yaml:"attachments"`
-  Tools       []string `yaml:"tools"`
+	Tools       []string `yaml:"tools"`
 }
 
 type Config struct {

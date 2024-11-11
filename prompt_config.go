@@ -26,10 +26,9 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 	if options.Model != "" {
 		promptConfig.Model = options.Model
 	}
-  if len(options.Attachments) > 0 {
-      promptConfig.Attachments = options.Attachments
-  }
-
+	if len(options.Attachments) > 0 {
+		promptConfig.Attachments = options.Attachments
+	}
 
 	// デフォルトのモデル設定
 	if promptConfig.Model == "" {
@@ -60,9 +59,9 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 	}
 
 	// ツール設定のマージ
-  if len(options.Tools) > 0 {
-      promptConfig.Tools = append(promptConfig.Tools, options.Tools...)
-  }
+	if len(options.Tools) > 0 {
+		promptConfig.Tools = append(promptConfig.Tools, options.Tools...)
+	}
 
 	return promptConfig, nil
 }
