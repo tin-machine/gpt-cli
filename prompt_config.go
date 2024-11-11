@@ -26,6 +26,9 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 	if options.Model != "" {
 		promptConfig.Model = options.Model
 	}
+	if len(options.Attachments) > 0 {
+		promptConfig.Attachments = options.Attachments
+	}
 
 	// デフォルトのモデル設定
 	if promptConfig.Model == "" {
@@ -53,6 +56,11 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 			return promptConfig, fmt.Errorf("ファイルの読み込みに失敗しました: %w", err)
 		}
 		promptConfig.User += "\n\n" + filesContent
+	}
+
+	// ツール設定のマージ
+	if len(options.Tools) > 0 {
+		promptConfig.Tools = append(promptConfig.Tools, options.Tools...)
 	}
 
 	return promptConfig, nil

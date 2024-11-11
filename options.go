@@ -41,6 +41,18 @@ type Options struct {
 	DeleteFileID         string
 	UploadAndAddFilesStr string
 	UploadAndAddFiles    []string
+	CreateAssistant      bool
+	AssistantID          string
+	Message              string
+	AssistantName        string
+	AssistantDescription string
+	Instruction          string
+	FilePath             string
+	ToolConfigPath       string
+	Temperature          float64
+	Metadata             map[string]interface{}
+	Attachments          []string
+	Tools                []string
 	Args                 []string
 }
 
@@ -54,6 +66,7 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.ImageList, "i", "", "画像ファイルをカンマ区切りで")
 	flag.StringVar(&options.ConfigPath, "c", "", "設定ファイルのパスを指定")
 	flag.StringVar(&options.Model, "m", "", "使用するモデルを指定")
+	flag.StringVar(&options.Model, "model", "gpt-3.5-turbo", "使用するモデルを指定")
 	flag.BoolVar(&options.Debug, "d", false, "デバッグモードを有効にする")
 	flag.BoolVar(&options.ShowVersion, "version", false, "バージョン情報を表示")
 	flag.BoolVar(&options.CollectFiles, "collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
@@ -61,9 +74,10 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.IntVar(&options.Timeout, "t", 60, "タイムアウト時間（秒）を指定")
 	flag.StringVar(&options.FileList, "f", "", "読み込むファイルのパスをカンマ区切りで指定")
 	flag.StringVar(&options.ShowHistory, "show-history", "", "会話履歴を表示")
-	flag.StringVar(&options.VectorStoreAction, "vector-store-action", "", "ベクトルストアのアクションを指定（create, list, delete, add-file）")
 	flag.StringVar(&options.VectorStoreName, "vector-store-name", "", "作成するベクトルストアの名前を指定")
+	flag.StringVar(&options.VectorStoreAction, "vector-store-action", "", "ベクトルストアのアクションを指定（create, list, delete, add-file）")
 	flag.StringVar(&options.VectorStoreID, "vector-store-id", "", "操作するベクトルストアのIDを指定")
+	flag.StringVar(&options.ToolConfigPath, "tool-config", "", "ツールの設定ファイルのパスを指定")
 	flag.StringVar(&options.FileID, "file-id", "", "ベクトルストアに追加するファイルのIDを指定")
 	flag.StringVar(&options.FileIDsStr, "file-ids", "", "ベクトルストアに追加するファイルのIDをカンマ区切りで指定")
 	flag.StringVar(&options.UploadFilePath, "upload-file", "", "OpenAIにアップロードするファイルのパスを指定")
@@ -71,6 +85,15 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.BoolVar(&options.ListFiles, "list-files", false, "アップロードしたファイルの一覧を表示")
 	flag.StringVar(&options.DeleteFileID, "delete-file", "", "削除するファイルのIDを指定")
 	flag.StringVar(&options.UploadAndAddFilesStr, "upload-and-add-to-vector", "", "アップロードするファイルのパスをカンマ区切りで指定し、自動的にベクトルストアに追加")
+	flag.StringVar(&options.AssistantID, "assistant-id", "", "操作するアシスタントのIDを指定")
+	flag.StringVar(&options.AssistantName, "assistant-name", "MyAssistant", "アシスタントの名前を指定")
+	flag.StringVar(&options.AssistantDescription, "assistant-description", "これはアシスタントの説明です。", "アシスタントの説明を指定")
+	flag.StringVar(&options.Instruction, "instruction", "あなたはユーザーを助けるアシスタントです。", "アシスタントへの指示を指定")
+	flag.StringVar(&options.FilePath, "file-path", "", "アップロードするファイルのパスを指定")
+	flag.StringVar(&options.UserMessage, "user-message", "こんにちは、今日の天気はどうですか？", "ユーザーからのメッセージを指定")
+	flag.Float64Var(&options.Temperature, "temperature", 0.7, "モデルの温度パラメータを指定")
+	flag.BoolVar(&options.CreateAssistant, "create-assistant", false, "新しいアシスタントを作成する")
+	flag.StringVar(&options.Message, "message", "", "アシスタントに送信するメッセージを指定")
 
 	flag.Parse()
 

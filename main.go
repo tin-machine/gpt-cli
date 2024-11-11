@@ -92,6 +92,43 @@ func Run() error {
 		return err
 	}
 
+	// // ツール設定の読み込み
+	// toolConfig, err := LoadToolConfig(options.ToolConfigPath)
+	// if err != nil {
+	//     return err
+	// }
+
+	if options.CreateAssistant {
+		// 新しいアシスタントを作成
+		assistantID, err := createNewAssistant(client, options)
+		if err != nil {
+			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+		}
+		fmt.Printf("新しいアシスタントが作成されました。ID: %s\n", assistantID)
+		return nil
+	}
+
+	if options.AssistantID != "" {
+		if options.Message != "" {
+			// 単一のメッセージを送信
+			err = chatWithAssistant(client, options.AssistantID, options)
+			if err != nil {
+				return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
+			}
+			return nil
+		} else {
+			// 対話モードを開始
+			err = interactiveChatWithAssistant(client, options.AssistantID, options)
+			if err != nil {
+				return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
+			}
+			return nil
+		}
+		// オプションが指定されていない場合のメッセージ
+		fmt.Println("新しいアシスタントを作成するには --create-assistant を指定してください。既存のアシスタントと対話するには --assistant-id を指定してください。")
+		return nil
+	}
+
 	// --upload-and-add-to-vector オプションの処理
 	if len(options.UploadAndAddFiles) > 0 {
 		// ファイルをアップロード
