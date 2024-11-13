@@ -17,6 +17,8 @@ export OPENAI_API_KEY="your-api-key-here"
 
 # 使い方
 
+## シンプルな使い方
+
 - **単純に聞くだけの場合**:
 ```
 gpt-cli "こんにちは！"
@@ -47,6 +49,8 @@ gpt-cli -p prompt1
 gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何か改修できる点を教えてください"
 ```
 
+## Assistant APIを使う
+
 - **ベクトルストアを作成する例**:
 
 ```bash
@@ -65,10 +69,19 @@ gpt-cli --vector-store-action list
 gpt-cli --upload-file "path/to/file.txt" --upload-purpose "fine-tune"
 ```
 
+- **複数ファイルをVector-storeにアップロード**:
+  - --upload-and-add-to-vector: ファイルをカンマ区切り
+  - --vector-store-name: ベクトルストアの名前
+  - --upload-purpose: アップロード目的
+
+```bash
+gpt-cli --upload-and-add-to-vector assistant_handler.go,config.go,config_loader.go,file_handler.go,main.go,openai_client.go,options.go,prompt_config.go,tool_config.go,utils.go,vector_store_handler.go -vector-store-name add-option -upload-purpose assistants
+```
+
 - **アシスタントを作成する例**:
 
 ```bash
-gpt-cli --create-assistant --assistant-name "MyAssistant" --instruction "あなたはユーザーを助けるアシスタントです。"
+gpt-cli --create-assistant --assistant-name "MyAssistant" --assistant-description "これはテスト用のアシスタントです。" --user-message "あなたはユーザーを助けるフレンドリーなアシスタントです。"
 ```
 
 - **アシスタントと対話する例**:
