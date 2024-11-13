@@ -81,7 +81,7 @@ gpt-cli --upload-and-add-to-vector assistant_handler.go,config.go,config_loader.
 - **アシスタントを作成する例**:
 
 ```bash
-gpt-cli --create-assistant --assistant-name "MyAssistant"   --assistant-description "これはテスト用のアシスタントです。"  --instruction "あなたはユーザーを助けるフレンドリーなアシスタントです。"
+gpt-cli --create-assistant --assistant-name "MyAssistant" --assistant-description "これはテスト用のアシスタントです。" --user-message "あなたはユーザーを助けるフレンドリーなアシスタントです。"
 ```
 
 - **アシスタントと対話する例**:
