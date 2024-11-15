@@ -34,14 +34,15 @@ func NewOpenAIClient(timeout int) (*openai.Client, error) {
 }
 
 // ExecuteChatCompletion はOpenAI APIにリクエストを送り、アシスタントの応答を取得します
-func ExecuteChatCompletion(client *openai.Client, model string, conversationHistory []openai.ChatCompletionMessage) (openai.ChatCompletionMessage, error) {
+func ExecuteChatCompletion(client *openai.Client, model string, max_tokens int, conversationHistory []openai.ChatCompletionMessage) (openai.ChatCompletionMessage, error) {
 	ctx := context.Background()
 
 	resp, err := client.CreateChatCompletion(
 		ctx,
 		openai.ChatCompletionRequest{
-			Model:    model,
-			Messages: conversationHistory,
+			Model:     model,
+			Messages:  conversationHistory,
+			MaxTokens: max_tokens,
 		},
 	)
 	if err != nil {

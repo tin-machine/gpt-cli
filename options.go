@@ -50,6 +50,7 @@ type Options struct {
 	FilePath             string
 	ToolConfigPath       string
 	Temperature          float64
+	MaxTokens            int
 	Metadata             map[string]interface{}
 	Attachments          []string
 	Tools                []string
@@ -65,8 +66,7 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.UserMessage, "u", "", "Userのメッセージを変更")
 	flag.StringVar(&options.ImageList, "i", "", "画像ファイルをカンマ区切りで")
 	flag.StringVar(&options.ConfigPath, "c", "", "設定ファイルのパスを指定")
-	flag.StringVar(&options.Model, "m", "", "使用するモデルを指定")
-	flag.StringVar(&options.Model, "model", "gpt-3.5-turbo", "使用するモデルを指定")
+	flag.StringVar(&options.Model, "model", "gpt-4o-mini", "使用するモデルを指定")
 	flag.BoolVar(&options.Debug, "d", false, "デバッグモードを有効にする")
 	flag.BoolVar(&options.ShowVersion, "version", false, "バージョン情報を表示")
 	flag.BoolVar(&options.CollectFiles, "collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
@@ -94,6 +94,7 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.Float64Var(&options.Temperature, "temperature", 0.7, "モデルの温度パラメータを指定")
 	flag.BoolVar(&options.CreateAssistant, "create-assistant", false, "新しいアシスタントを作成する")
 	flag.StringVar(&options.Message, "message", "", "アシスタントに送信するメッセージを指定")
+	flag.IntVar(&options.MaxTokens, "max-tokens", 16384, "Max tokens to generate in the completion")
 
 	flag.Parse()
 
@@ -113,6 +114,11 @@ func ParseCommandLineArgs() (Options, error) {
 		for i := range options.FileIDs {
 			options.FileIDs[i] = strings.TrimSpace(options.FileIDs[i])
 		}
+	}
+
+	// コマンドライン引数から取得した max-tokens 値を Options 構造体に設定
+	if options.MaxTokens <= 0 {
+		options.MaxTokens = 200 // デフォルト値などを適切に設定
 	}
 
 	return options, nil

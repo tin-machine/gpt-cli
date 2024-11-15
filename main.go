@@ -125,8 +125,8 @@ func Run() error {
 			return nil
 		}
 		// オプションが指定されていない場合のメッセージ
-		fmt.Println("新しいアシスタントを作成するには --create-assistant を指定してください。既存のアシスタントと対話するには --assistant-id を指定してください。")
-		return nil
+		// fmt.Println("新しいアシスタントを作成するには --create-assistant を指定してください。既存のアシスタントと対話するには --assistant-id を指定してください。")
+		// return nil
 	}
 
 	// --upload-and-add-to-vector オプションの処理
@@ -257,7 +257,7 @@ func Run() error {
 	}
 
 	// OpenAI API へのリクエスト
-	assistantMessage, err := ExecuteChatCompletion(client, promptConfig.Model, conversationHistory)
+	assistantMessage, err := ExecuteChatCompletion(client, promptConfig.Model, promptConfig.MaxTokens, conversationHistory)
 	if err != nil {
 		return fmt.Errorf("ChatCompletionエラー: %w", err)
 	}

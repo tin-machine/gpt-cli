@@ -40,7 +40,7 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 
 	assistant, err := client.CreateAssistant(ctx, assistantRequest)
 	if err != nil {
-		return "", fmt.Errorf("CreateAssistant エラー: %w", err)
+		return "", fmt.Errorf("アシスタントを作成中にエラーが発生しました: %w", err)
 	}
 
 	fmt.Printf("アシスタントが作成されました:\nID: %s\nName: %s\n", assistant.ID, *assistant.Name)
@@ -53,7 +53,7 @@ func chatWithAssistant(client *openai.Client, assistantID string, options Option
 	// アシスタントの取得
 	assistant, err := client.RetrieveAssistant(ctx, assistantID)
 	if err != nil {
-		return fmt.Errorf("アシスタントの取得に失敗しました: %w", err)
+		return fmt.Errorf("アシスタント(%s)の取得に失敗しました: %w", assistantID, err)
 	}
 
 	// メッセージの構築
@@ -99,7 +99,7 @@ func interactiveChatWithAssistant(client *openai.Client, assistantID string, opt
 	// アシスタントの取得
 	assistant, err := client.RetrieveAssistant(ctx, assistantID)
 	if err != nil {
-		return fmt.Errorf("アシスタントの取得に失敗しました: %w", err)
+		return fmt.Errorf("アシスタント(%s)の取得に失敗しました: %w", assistantID, err)
 	}
 
 	// 会話履歴を初期化
