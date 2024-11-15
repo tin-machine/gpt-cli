@@ -110,7 +110,8 @@ func CreateMessages(promptConfig Prompt) ([]openai.ChatCompletionMessage, error)
 func imageToBase64(path string) (string, string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return "", "", err
+		// return "", "", err
+		return "", "", fmt.Errorf("ファイルを読み込む際にエラーが発生しました: %w", err)
 	}
 
 	// ファイル拡張子からMIMEタイプを推測

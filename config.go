@@ -12,6 +12,7 @@ type Prompt struct {
 	Model       string   `yaml:"model"`
 	System      string   `yaml:"system"`
 	User        string   `yaml:"user"`
+	MaxTokens   int      `yaml:"maxTokens"`
 	Attachments []string `yaml:"attachments"`
 	Tools       []string `yaml:"tools"`
 }
