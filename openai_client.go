@@ -37,12 +37,18 @@ func NewOpenAIClient(timeout int) (*openai.Client, error) {
 func ExecuteChatCompletion(client *openai.Client, model string, max_tokens int, conversationHistory []openai.ChatCompletionMessage) (openai.ChatCompletionMessage, error) {
 	ctx := context.Background()
 
+	// MaxTokensをポインタ型に変更
+	var maxTokensPtr *int
+	if max_tokens > 0 {
+		maxTokensPtr = &max_tokens
+	}
+
 	resp, err := client.CreateChatCompletion(
 		ctx,
 		openai.ChatCompletionRequest{
 			Model:     model,
 			Messages:  conversationHistory,
-			MaxTokens: max_tokens,
+			MaxTokens: *maxTokensPtr,
 		},
 	)
 	if err != nil {
