@@ -213,3 +213,27 @@ func inputAvailable() bool {
 	}
 	return (stat.Mode() & os.ModeCharDevice) == 0
 }
+
+func handleChatCompletion(client *openai.Client, promptConfig Prompt, conversationHistory []openai.ChatCompletionMessage, options Options) error {
+	// OpenAI API へのリクエスト
+	assistantMessage, err := ExecuteChatCompletion(client, promptConfig.Model, promptConfig.MaxTokens, conversationHistory)
+	if err != nil {
+		return fmt.Errorf("ChatCompletionエラー: %w", err)
+	}
+
+	// 会話履歴にアシスタントの応答を追加
+	conversationHistory = append(conversationHistory, assistantMessage)
+
+	// 会話履歴の保存
+	if options.HistoryFile != "" {
+		err = SaveConversationHistory(options.HistoryFile, conversationHistory)
+		if err != nil {
+			return fmt.Errorf("会話履歴の保存に失敗しました: %w", err)
+		}
+	}
+
+	// 標準出力に結果を表示
+	fmt.Println(assistantMessage.Content)
+
+	return nil
+}
