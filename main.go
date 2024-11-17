@@ -59,6 +59,11 @@ func Run() error {
 		return err
 	}
 
+	// デフォルトプロンプトを設定
+	if promptConfig.System == "" && promptConfig.User == "" {
+		promptConfig = GetDefaultPromptConfig()
+	}
+
 	// コンテキストメッセージの作成
 	messages, err := CreateMessages(promptConfig)
 	if err != nil {

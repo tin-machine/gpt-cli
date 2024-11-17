@@ -65,3 +65,15 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 
 	return promptConfig, nil
 }
+
+// GetDefaultPromptConfig はデフォルトのプロンプトの設定を取得します
+func GetDefaultPromptConfig() Prompt {
+	return Prompt{
+		Model:       "gpt-3.5-turbo",
+		System:      "あなたはユーザーを助けるアシスタントです。",
+		User:        "ユーザーからのメッセージがまだありません。",
+		MaxTokens:   150,
+		Attachments: []string{},
+		Tools:       []string{},
+	}
+}
