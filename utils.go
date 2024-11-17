@@ -58,15 +58,33 @@ func ReadFiles(fileList string) (string, error) {
 	files := strings.Split(fileList, ",")
 
 	for _, filePath := range files {
-		filePath = strings.TrimSpace(filePath) // 前後の空白を削除
-		content, err := os.ReadFile(filePath)
-		if err != nil {
-			return "", fmt.Errorf("ファイルの読み込みに失敗しました (%s): %w", filePath, err)
+		// グロブパターンを処理
+		if matches, err := filepath.Glob(filePath); err == nil {
+			for _, match := range matches {
+				if err := readAndAppendFileContents(match, &builder); err != nil {
+					return "", fmt.Errorf("ファイルの読み込みに失敗しました (%s): %w", match, err)
+				}
+			}
+		} else {
+			// グロブ処理が失敗した場合、通常のファイルパスとみなして読み込む
+			if err := readAndAppendFileContents(filePath, &builder); err != nil {
+				return "", fmt.Errorf("ファイルの読み込みに失敗しました (%s): %w", filePath, err)
+			}
 		}
-		builder.WriteString(fmt.Sprintf("ファイル名: %s\n内容:\n%s\n\n", filePath, string(content)))
+	}
+	return builder.String(), nil
+}
+
+// readAndAppendFileContents は指定されたファイルの内容をリストに追加します。
+func readAndAppendFileContents(filePath string, builder *strings.Builder) error {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
 	}
 
-	return builder.String(), nil
+	// fmt.Fprintfを使って直接builderに書き込み
+	_, err = fmt.Fprintf(builder, "ファイル名: %s\n内容:\n%s\n\n", filePath, string(content))
+	return err
 }
 
 // CreateMessages はプロンプト設定からメッセージを作成します
