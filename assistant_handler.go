@@ -40,10 +40,12 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 
 	assistant, err := client.CreateAssistant(ctx, assistantRequest)
 	if err != nil {
+		logger.Error("アシスタントを作成中にエラーが発生しました: %v", err)
 		return "", fmt.Errorf("アシスタントを作成中にエラーが発生しました: %w", err)
 	}
 
-	fmt.Printf("アシスタントが作成されました:\nID: %s\nName: %s\n", assistant.ID, *assistant.Name)
+	logger.Info("アシスタントが作成されました:\nID: %s\nName: %s\n", assistant.ID, *assistant.Name)
+	// fmt.Printf("アシスタントが作成されました:\nID: %s\nName: %s\n", assistant.ID, *assistant.Name)
 	return assistant.ID, nil
 }
 

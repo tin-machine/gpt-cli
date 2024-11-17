@@ -181,3 +181,47 @@ func ConfigureLogDirectory(options *Options, config Config) error {
 
 	return nil
 }
+
+func (o Options) String() string {
+	var sb strings.Builder
+	sb.WriteString("Options:\n")
+	sb.WriteString(fmt.Sprintf("  PromptOption: %s\n", o.PromptOption))
+	sb.WriteString(fmt.Sprintf("  SystemMessage: %s\n", o.SystemMessage))
+	sb.WriteString(fmt.Sprintf("  UserMessage: %s\n", o.UserMessage))
+	sb.WriteString(fmt.Sprintf("  Model: %s\n", o.Model))
+	sb.WriteString(fmt.Sprintf("  Debug: %t\n", o.Debug))
+	sb.WriteString(fmt.Sprintf("  AssistantID: %s\n", o.AssistantID))
+	sb.WriteString(fmt.Sprintf("  Temperature: %f\n", o.Temperature))
+	sb.WriteString(fmt.Sprintf("  MaxTokens: %d\n", o.MaxTokens))
+	sb.WriteString(fmt.Sprintf("  ImageList: %s\n", o.ImageList))
+	sb.WriteString(fmt.Sprintf("	ConfigPath: %s\n", o.ConfigPath))
+	sb.WriteString(fmt.Sprintf("	ShowVersion: %t\n", o.ShowVersion))
+	sb.WriteString(fmt.Sprintf("	HistoryFile: %s\n", o.HistoryFile))
+	sb.WriteString(fmt.Sprintf("	ListFiles: %t\n", o.ListFiles))
+	sb.WriteString(fmt.Sprintf("	Timeout: %d\n", o.Timeout))
+	sb.WriteString(fmt.Sprintf("	FileList: %s\n", o.FileList))
+	sb.WriteString(fmt.Sprintf("	ShowHistory: %s\n", o.ShowHistory))
+	sb.WriteString(fmt.Sprintf("	VectorStoreAction: %s\n", o.VectorStoreAction))
+	sb.WriteString(fmt.Sprintf("	VectorStoreName: %s\n", o.VectorStoreName))
+	sb.WriteString(fmt.Sprintf("	VectorStoreID: %s\n", o.VectorStoreID))
+	sb.WriteString(fmt.Sprintf("	FileID: %s\n", o.FileID))
+	sb.WriteString(fmt.Sprintf("	FileIDsStr: %s\n", o.FileIDsStr))
+	sb.WriteString(fmt.Sprintf("  FileIDs: %s\n", strings.Join(o.FileIDs, ", ")))
+	sb.WriteString(fmt.Sprintf("	UploadFilePath: %s\n", o.UploadFilePath))
+	sb.WriteString(fmt.Sprintf("	UploadPurpose: %s\n", o.UploadPurpose))
+	sb.WriteString(fmt.Sprintf("	DeleteFileID: %s\n", o.DeleteFileID))
+	sb.WriteString(fmt.Sprintf("	UploadAndAddFilesStr: %s\n", o.UploadAndAddFilesStr))
+	sb.WriteString(fmt.Sprintf("	UploadAndAddFiles: %s\n", strings.Join(o.UploadAndAddFiles, ", ")))
+	sb.WriteString(fmt.Sprintf("	CreateAssistant: %t\n", o.CreateAssistant))
+	sb.WriteString(fmt.Sprintf("	Message: %s\n", o.Message))
+	sb.WriteString(fmt.Sprintf("	AssistantName: %s\n", o.AssistantName))
+	sb.WriteString(fmt.Sprintf("	AssistantDescription: %s\n", o.AssistantDescription))
+	sb.WriteString(fmt.Sprintf("	Instruction: %s\n", o.Instruction))
+	sb.WriteString(fmt.Sprintf("	FilePath: %s\n", o.FilePath))
+	sb.WriteString(fmt.Sprintf("	ToolConfigPath: %s\n", o.ToolConfigPath))
+	sb.WriteString(fmt.Sprintf("	Attachments: %s\n", o.Attachments))
+	sb.WriteString(fmt.Sprintf("	Tools: %s\n", strings.Join(o.Tools, ", ")))
+	sb.WriteString(fmt.Sprintf("	Args: %s\n", strings.Join(o.Args, ", ")))
+
+	return sb.String()
+}
