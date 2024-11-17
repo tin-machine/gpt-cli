@@ -64,19 +64,4 @@ func ExecuteChatCompletion(client *openai.Client, model string, max_tokens int, 
 	}
 	assistantMessage := resp.Choices[0].Message
 	return assistantMessage, nil
-
-	// resp, err := client.CreateChatCompletion(
-	// 	ctx,
-	// 	openai.ChatCompletionRequest{
-	// 		Model:     model,
-	// 		Messages:  conversationHistory,
-	// 		MaxTokens: *maxTokensPtr,
-	// 	},
-	// )
-	// if err != nil {
-	// 	return openai.ChatCompletionMessage{}, fmt.Errorf("ChatCompletionエラー: %w", err)
-	// }
-
-	// assistantMessage := resp.Choices[0].Message
-	// return assistantMessage, nil
 }

@@ -90,7 +90,7 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.AssistantDescription, "assistant-description", "これはアシスタントの説明です。", "アシスタントの説明を指定")
 	flag.StringVar(&options.Instruction, "instruction", "あなたはユーザーを助けるアシスタントです。", "アシスタントへの指示を指定")
 	flag.StringVar(&options.FilePath, "file-path", "", "アップロードするファイルのパスを指定")
-	flag.StringVar(&options.UserMessage, "user-message", "こんにちは、今日の天気はどうですか？", "ユーザーからのメッセージを指定")
+	flag.StringVar(&options.UserMessage, "user-message", "", "ユーザーからのメッセージを指定")
 	flag.Float64Var(&options.Temperature, "temperature", 0.7, "モデルの温度パラメータを指定")
 	flag.BoolVar(&options.CreateAssistant, "create-assistant", false, "新しいアシスタントを作成する")
 	flag.StringVar(&options.Message, "message", "", "アシスタントに送信するメッセージを指定")

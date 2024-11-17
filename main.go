@@ -59,15 +59,15 @@ func Run() error {
 		return err
 	}
 
-	// デフォルトプロンプトを設定
-	if promptConfig.System == "" && promptConfig.User == "" {
-		promptConfig = GetDefaultPromptConfig()
-	}
-
 	// コンテキストメッセージの作成
 	messages, err := CreateMessages(promptConfig)
 	if err != nil {
 		return fmt.Errorf("メッセージの作成に失敗しました: %w", err)
+	}
+
+	// デフォルトプロンプトを設定
+	if promptConfig.System == "" && promptConfig.User == "" {
+		promptConfig = GetDefaultPromptConfig()
 	}
 
 	// 会話履歴の読み込み
