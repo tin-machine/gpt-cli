@@ -6,6 +6,7 @@ import (
 )
 
 var Version string
+var logger Logger
 
 func main() {
 	if err := Run(); err != nil {
@@ -21,6 +22,9 @@ func Run() error {
 	if err != nil {
 		return err
 	}
+
+	// ロギングの設定
+	logger = NewConsoleLogger(options.Debug)
 
 	// バージョン情報の表示
 	if options.ShowVersion {

@@ -233,6 +233,11 @@ func inputAvailable() bool {
 }
 
 func handleChatCompletion(client *openai.Client, promptConfig Prompt, conversationHistory []openai.ChatCompletionMessage, options Options) error {
+	// -dオプションが有効な場合、Optionsの内容を出力
+	if options.Debug {
+		logger.Debug("現在のオプション内容:\n%s", options.String())
+	}
+
 	// OpenAI API へのリクエスト
 	assistantMessage, err := ExecuteChatCompletion(client, promptConfig.Model, promptConfig.MaxTokens, conversationHistory)
 	if err != nil {
