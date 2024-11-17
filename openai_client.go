@@ -44,26 +44,26 @@ func ExecuteChatCompletion(client *openai.Client, model string, max_tokens int, 
 	}
 
 	// ChatCompletionRequest の作成
-  chatRequest := openai.ChatCompletionRequest{
-      Model:    model,
-      Messages: conversationHistory,
-  }
+	chatRequest := openai.ChatCompletionRequest{
+		Model:    model,
+		Messages: conversationHistory,
+	}
 
-  // MaxTokensが存在する場合に設定
-  if maxTokensPtr != nil {
-      chatRequest.MaxTokens = *maxTokensPtr
-  }
+	// MaxTokensが存在する場合に設定
+	if maxTokensPtr != nil {
+		chatRequest.MaxTokens = *maxTokensPtr
+	}
 
 	resp, err := client.CreateChatCompletion(ctx, chatRequest)
-  if err != nil {
-      return openai.ChatCompletionMessage{}, fmt.Errorf("ChatCompletionエラー: %w", err)
-  }
+	if err != nil {
+		return openai.ChatCompletionMessage{}, fmt.Errorf("ChatCompletionエラー: %w", err)
+	}
 
-  if len(resp.Choices) == 0 {
-      return openai.ChatCompletionMessage{}, fmt.Errorf("ChatCompletionエラー: 返されたChoicesが空です")
-  }
+	if len(resp.Choices) == 0 {
+		return openai.ChatCompletionMessage{}, fmt.Errorf("ChatCompletionエラー: 返されたChoicesが空です")
+	}
 	assistantMessage := resp.Choices[0].Message
-  return assistantMessage, nil
+	return assistantMessage, nil
 
 	// resp, err := client.CreateChatCompletion(
 	// 	ctx,

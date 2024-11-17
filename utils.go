@@ -15,12 +15,16 @@ import (
 	"golang.org/x/text/language"
 )
 
-// SplitImageList は画像ファイルのリストを分割します
+// SplitImageListは、カンマで区切られた画像ファイル名のリストを分割し、スライス（配列）として返します。
+// 引数imageListはカンマ区切りの文字列です。
 func SplitImageList(imageList string) []string {
 	return strings.Split(imageList, ",")
 }
 
-// CollectFiles は指定したディレクトリ内のファイル名と内容を収集します（.gitディレクトリを除く）
+// CollectFilesは、指定されたディレクトリ内のすべてのファイル名とその内容を収集します。
+// 収集した内容は、ファイル名と内容のペアとして文字列として返されます。
+// 引数dirは検索開始のディレクトリです。
+// .gitディレクトリはスキップされます。
 func CollectFiles(dir string) (string, error) {
 	var builder strings.Builder
 
@@ -52,7 +56,9 @@ func CollectFiles(dir string) (string, error) {
 	return builder.String(), nil
 }
 
-// ReadFiles はカンマ区切りのファイルリストからファイルを読み込み、内容を結合して返します
+// ReadFilesは、コンマで区切られたファイル名リストからファイルを読み込み、その内容を結合して返します。
+// 引数fileListは読み込むファイルのパスを示します。
+// 成功した場合は内容が連結された文字列、エラーが発生した場合はそのエラーメッセージを返します。
 func ReadFiles(fileList string) (string, error) {
 	var builder strings.Builder
 	files := strings.Split(fileList, ",")
