@@ -8,7 +8,9 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-// CreateVectorStore は新しいベクトルストアを作成します
+// CreateVectorStoreは、新しいベクトルストアを作成し、その情報を返します。
+// 引数clientはOpenAI APIクライアント、nameは作成するベクトルストアの名前です。
+// 作成に成功すると、ベクトルストアの詳細が返されますが、それに失敗した場合はエラーメッセージが返されます。
 func CreateVectorStore(client *openai.Client, name string) (*openai.VectorStore, error) {
 	req := openai.VectorStoreRequest{
 		Name: name,
@@ -21,7 +23,9 @@ func CreateVectorStore(client *openai.Client, name string) (*openai.VectorStore,
 	return &vs, nil
 }
 
-// ListVectorStores は既存のベクトルストアを一覧表示します
+// ListVectorStoresは、OpenAIに存在するすべてのベクトルストアを一覧で取得します。
+// 引数clientはOpenAI APIクライアントであり、成功した場合はベクトルストアのリストが返されます。
+// 何らかの理由で取得に失敗した場合は、その失敗に関するエラーメッセージが返されます。
 func ListVectorStores(client *openai.Client) ([]openai.VectorStore, error) {
 	ctx := context.Background()
 	resp, err := client.ListVectorStores(ctx, openai.Pagination{})
@@ -31,7 +35,9 @@ func ListVectorStores(client *openai.Client) ([]openai.VectorStore, error) {
 	return resp.VectorStores, nil
 }
 
-// DeleteVectorStore は指定したIDのベクトルストアを削除します
+// DeleteVectorStoreは、指定されたIDのベクトルストアを削除します。
+// 引数clientはOpenAI APIクライアント、vectorStoreIDは削除するストアのIDです。
+// 成功した場合はnilが返されますが、何らかのエラーが発生した場合は、そのエラーメッセージが返されます。
 func DeleteVectorStore(client *openai.Client, vectorStoreID string) error {
 	ctx := context.Background()
 	_, err := client.DeleteVectorStore(ctx, vectorStoreID)
@@ -51,20 +57,6 @@ func AddFileToVectorStore(client *openai.Client, vectorStoreID string, fileID st
 	return &vsFile, nil
 }
 
-// // AddFilesToVectorStore は複数のファイルをベクトルストアに追加します
-// func AddFilesToVectorStore(client *openai.Client, vectorStoreID string, fileIDs []string) error {
-//     ctx := context.Background()
-//     req := openai.VectorStoreFileBatchRequest{
-//         FileIDs: fileIDs,
-//     }
-//     vsFileBatch, err := client.CreateVectorStoreFileBatch(ctx, vectorStoreID, req)
-//     if err != nil {
-//         return fmt.Errorf("ファイルバッチの作成に失敗しました: %v", err)
-//     }
-//     fmt.Printf("ファイルバッチが作成されました。Batch ID: %s, Status: %s\n", vsFileBatch.ID, vsFileBatch.Status)
-//     return nil
-// }
-
 // AddFilesToVectorStore は複数のファイルをベクトルストアに追加します
 func AddFilesToVectorStore(client *openai.Client, vectorStoreID string, fileIDs []string) error {
 	for _, fileID := range fileIDs {
@@ -76,7 +68,9 @@ func AddFilesToVectorStore(client *openai.Client, vectorStoreID string, fileIDs 
 	return nil
 }
 
-// GetOrCreateVectorStore は指定された名前のVectorStoreを取得または作成します
+// GetOrCreateVectorStoreは、指定された名前のベクトルストアを取得するか、存在しない場合は新しく作成します。
+// 引数clientはOpenAI APIクライアント、nameはターゲットとなるベクトルストアの名前です。
+// 成功した場合は、そのベクトルストアの詳細が返されますが、失敗した場合はエラーメッセージが返されます。
 func GetOrCreateVectorStore(client *openai.Client, name string) (*openai.VectorStore, error) {
 	// 既存のVectorStoreを一覧取得
 	vsList, err := ListVectorStores(client)

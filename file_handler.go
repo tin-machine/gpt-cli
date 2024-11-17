@@ -17,7 +17,10 @@ type OpenAIClient interface {
 	DeleteFile(ctx context.Context, fileID string) error
 }
 
-// UploadFile はファイルをOpenAIにアップロードします
+// UploadFileは指定されたファイルをOpenAI APIにアップロードする関数です。
+// 引数clientはOpenAI APIのクライアント、filePathはアップロードするファイルのパス、purposeはファイルの用途です。
+// 成功した場合はアップロードされたファイルの情報を含むopenai.File構造体が返されます。
+// エラーが発生した場合は、そのエラーメッセージが返されます。
 func UploadFile(client OpenAIClient, filePath string, purpose string) (*openai.File, error) {
 	ctx := context.Background()
 
@@ -44,7 +47,9 @@ func UploadFile(client OpenAIClient, filePath string, purpose string) (*openai.F
 	return &uploadedFile, nil
 }
 
-// ListUploadedFiles はアップロードされたファイルの一覧を取得します
+// ListUploadedFilesは、ユーザーがOpenAIにアップロードしたファイルの一覧を取得する関数です。
+// clientはOpenAI APIクライアントであり、レスポンスにはファイルの詳細が含まれます。
+// 成功した場合はファイルのリストが返されますが、API呼び出しに失敗した場合はエラーが返されます。
 func ListUploadedFiles(client *openai.Client) (openai.FilesList, error) {
 	ctx := context.Background()
 	files, err := client.ListFiles(ctx)
@@ -85,6 +90,9 @@ func UploadFiles(client *openai.Client, filePaths []string, purpose string) ([]s
 	return fileIDs, nil
 }
 
+// handleUploadAndAddFilesは、ユーザー指定のファイルをOpenAIにアップロードし、そのファイルをベクトルストアに追加します。
+// 引数clientはOpenAI APIクライアント、optionsにはアップロード対象のファイルや追加に関する設定が含まれます。
+// 成功した場合は、アップロード結果の詳細が表示され、エラーが発生した場合はエラーメッセージが返されます。
 func handleUploadAndAddFiles(client *openai.Client, options Options) error {
 	// ファイルをアップロード
 	fileIDs, err := UploadFiles(client, options.UploadAndAddFiles, options.UploadPurpose)
