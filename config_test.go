@@ -35,7 +35,7 @@ prompts:
 		if prompt.User != "user message" {
 			t.Errorf("LoadConfig() は user を正しく読み取れませんでした")
 		}
-		if prompt.MaxTokens != 150 {
+		if prompt.MaxTokens == nil || *prompt.MaxTokens != 150 {
 			t.Errorf("LoadConfig() は maxTokens を正しく読み取れませんでした")
 		}
 		if len(prompt.Attachments) != 0 {
