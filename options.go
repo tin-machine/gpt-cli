@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -50,7 +51,7 @@ type Options struct {
 	FilePath             string
 	ToolConfigPath       string
 	Temperature          float64
-	MaxTokens            int
+	MaxTokens            *int
 	Metadata             map[string]interface{}
 	Attachments          []string
 	Tools                []string
@@ -94,7 +95,18 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.Float64Var(&options.Temperature, "temperature", 0.7, "モデルの温度パラメータを指定")
 	flag.BoolVar(&options.CreateAssistant, "create-assistant", false, "新しいアシスタントを作成する")
 	flag.StringVar(&options.Message, "message", "", "アシスタントに送信するメッセージを指定")
-	flag.IntVar(&options.MaxTokens, "max-tokens", 16384, "Max tokens to generate in the completion")
+	// flag.IntVar(&options.MaxTokens, "max-tokens", 16384, "Max tokens to generate in the completion")
+
+	// MaxTokensのフラグを設定
+	options.MaxTokens = nil
+	flag.Func("max-tokens", "Max tokens to generate in the completion", func(s string) error {
+		value, err := strconv.Atoi(s)
+		if err != nil {
+			return err
+		}
+		options.MaxTokens = &value
+		return nil
+	})
 
 	flag.Parse()
 
@@ -116,10 +128,10 @@ func ParseCommandLineArgs() (Options, error) {
 		}
 	}
 
-	// コマンドライン引数から取得した max-tokens 値を Options 構造体に設定
-	if options.MaxTokens <= 0 {
-		options.MaxTokens = 200 // デフォルト値などを適切に設定
-	}
+	// // コマンドライン引数から取得した max-tokens 値を Options 構造体に設定
+	// if options.MaxTokens <= 0 {
+	// 	options.MaxTokens = 200 // デフォルト値などを適切に設定
+	// }
 
 	return options, nil
 }
@@ -192,7 +204,7 @@ func (o Options) String() string {
 	sb.WriteString(fmt.Sprintf("  Debug: %t\n", o.Debug))
 	sb.WriteString(fmt.Sprintf("  AssistantID: %s\n", o.AssistantID))
 	sb.WriteString(fmt.Sprintf("  Temperature: %f\n", o.Temperature))
-	sb.WriteString(fmt.Sprintf("  MaxTokens: %d\n", o.MaxTokens))
+	// sb.WriteString(fmt.Sprintf("  MaxTokens: %d\n", o.MaxTokens))
 	sb.WriteString(fmt.Sprintf("  ImageList: %s\n", o.ImageList))
 	sb.WriteString(fmt.Sprintf("	ConfigPath: %s\n", o.ConfigPath))
 	sb.WriteString(fmt.Sprintf("	ShowVersion: %t\n", o.ShowVersion))
@@ -222,6 +234,11 @@ func (o Options) String() string {
 	sb.WriteString(fmt.Sprintf("	Attachments: %s\n", o.Attachments))
 	sb.WriteString(fmt.Sprintf("	Tools: %s\n", strings.Join(o.Tools, ", ")))
 	sb.WriteString(fmt.Sprintf("	Args: %s\n", strings.Join(o.Args, ", ")))
+	if o.MaxTokens != nil {
+		sb.WriteString(fmt.Sprintf("  MaxTokens: %d\n", *o.MaxTokens))
+	} else {
+		sb.WriteString("  MaxTokens: <nil>\n")
+	}
 
 	return sb.String()
 }

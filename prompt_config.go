@@ -17,6 +17,9 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 	}
 
 	// コマンドライン引数からの上書き
+	if options.MaxTokens != nil {
+		promptConfig.MaxTokens = options.MaxTokens
+	}
 	if options.SystemMessage != "" {
 		promptConfig.System = options.SystemMessage
 	}
@@ -72,7 +75,6 @@ func GetDefaultPromptConfig() Prompt {
 		Model:       "gpt-3.5-turbo",
 		System:      "あなたはユーザーを助けるアシスタントです。",
 		User:        "ユーザーからのメッセージがまだありません。",
-		MaxTokens:   150,
 		Attachments: []string{},
 		Tools:       []string{},
 	}
