@@ -152,14 +152,16 @@ func BuildUserMessage(options *Options, input io.Reader) error {
 	}
 
 	// 標準入力からのデータを取得
-	reader := bufio.NewReader(input)
-	inputData, err := io.ReadAll(reader)
-	if err != nil {
-		return fmt.Errorf("標準入力の読み込みに失敗しました: %w", err)
-	}
-	trimmedInput := strings.TrimSpace(string(inputData))
-	if trimmedInput != "" {
-		options.UserMessage += " " + trimmedInput
+	if inputAvailable() {
+		reader := bufio.NewReader(input)
+		inputData, err := io.ReadAll(reader)
+		if err != nil {
+			return fmt.Errorf("標準入力の読み込みに失敗しました: %w", err)
+		}
+		trimmedInput := strings.TrimSpace(string(inputData))
+		if trimmedInput != "" {
+			options.UserMessage += " " + trimmedInput
+		}
 	}
 	return nil
 }
