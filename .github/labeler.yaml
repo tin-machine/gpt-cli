@@ -1,0 +1,6 @@
+enhancement:
+  - head-branch: ['^enhancement', 'enhancement']
+feature:
+  - head-branch: ['^feature', 'feature']
+fix:
+  - head-branch: ['^fix', 'fix']
