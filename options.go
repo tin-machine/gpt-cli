@@ -1,5 +1,3 @@
-// 新しいファイル `options.go` を追加し、コマンドラインオプションの解析と関連する処理をまとめました。
-
 package main
 
 import (
@@ -147,23 +145,21 @@ func SetupLogging(debug bool) {
 }
 
 // BuildUserMessage はユーザーメッセージを構築します
-func BuildUserMessage(options *Options) error {
+func BuildUserMessage(options *Options, input io.Reader) error {
 	// フラグ以外の引数をユーザーメッセージに追加
 	if len(options.Args) > 0 {
 		options.UserMessage += " " + strings.Join(options.Args, " ")
 	}
 
 	// 標準入力からのデータを取得
-	if inputAvailable() {
-		reader := bufio.NewReader(os.Stdin)
-		inputData, err := io.ReadAll(reader)
-		if err != nil {
-			return fmt.Errorf("標準入力の読み込みに失敗しました: %w", err)
-		}
-		trimmedInput := strings.TrimSpace(string(inputData))
-		if trimmedInput != "" {
-			options.UserMessage += " " + trimmedInput
-		}
+	reader := bufio.NewReader(input)
+	inputData, err := io.ReadAll(reader)
+	if err != nil {
+		return fmt.Errorf("標準入力の読み込みに失敗しました: %w", err)
+	}
+	trimmedInput := strings.TrimSpace(string(inputData))
+	if trimmedInput != "" {
+		options.UserMessage += " " + trimmedInput
 	}
 	return nil
 }

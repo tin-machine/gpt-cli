@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 var Version string
@@ -48,7 +49,7 @@ func Run() error {
 	}
 
 	// ユーザーメッセージの構築
-	err = BuildUserMessage(&options)
+	err = BuildUserMessage(&options, os.Stdin)
 	if err != nil {
 		return err
 	}
