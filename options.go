@@ -1,9 +1,6 @@
-// 新しいファイル `options.go` を追加し、コマンドラインオプションの解析と関連する処理をまとめました。
-
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -155,7 +152,7 @@ func BuildUserMessage(options *Options) error {
 
 	// 標準入力からのデータを取得
 	if inputAvailable() {
-		reader := bufio.NewReader(os.Stdin)
+		reader := os.Stdin
 		inputData, err := io.ReadAll(reader)
 		if err != nil {
 			return fmt.Errorf("標準入力の読み込みに失敗しました: %w", err)
