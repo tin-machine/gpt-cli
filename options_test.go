@@ -26,6 +26,10 @@ func TestBuildUserMessageWithStdin(t *testing.T) {
 		UserMessage: "",
 	}
 
+	// BuildUserMessageを呼び出し
+	msg_err := BuildUserMessage(&options)
+
+	// Writer.Write()に渡せるよう，入力を[]byteに変換する．
 	input := []byte(inputData)
 	// 標準出力へ書き込む．
 	if n, err := os.Stdout.Write(input); err != nil {
@@ -33,8 +37,6 @@ func TestBuildUserMessageWithStdin(t *testing.T) {
 		return
 	}
 
-	// BuildUserMessageを呼び出し
-	msg_err := BuildUserMessage(&options)
 	if msg_err != nil {
 		t.Fatalf("BuildUserMessage() エラー: %v", err)
 	}
