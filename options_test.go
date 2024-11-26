@@ -8,18 +8,30 @@ import (
 func TestBuildUserMessageWithStdin(t *testing.T) {
 	// 標準入力を模擬するデータ
 	inputData := "This is a test input from stdin"
-	// mockInput := bytes.NewBufferString(inputData) // bytes.Bufferはio.Readerを実装している
 
-	// テスト用に一時的なReader，Writerを取得する．
+	// stdinの差し替えの準備
+	oldStdin := os.Stdin
+	defer func() { os.Stdin = oldStdin }() // テスト終了後に元に戻す
+
+	// 標準入力用のパイプを作成
 	r, w, err := os.Pipe()
 	if err != nil {
-		t.Fatalf("os.Pipe(): %v", err)
+		t.Fatalf("os.Pipe: %v", err)
 	}
 
-	// os.Stdin，os.Stdoutを取得したReader，Writerと差し替え，テスト終了時に復元する．
-	osStdin, osStdout := os.Stdin, os.Stdout
-	os.Stdin, os.Stdout = r, w
-	defer func() { os.Stdin, os.Stdout = osStdin, osStdout }()
+	// 作成したパイプを標準入力としてセット
+	os.Stdin = r
+
+	// エラーチャネルを作成
+	errChan := make(chan error, 1)
+
+	// テストで使用するデータを、バックグラウンドで標準入力に書き込む
+	go func() {
+		defer w.Close()
+		if _, err := w.Write([]byte(inputData)); err != nil {
+			errChan <- err
+		}
+	}()
 
 	// Optionsの準備
 	options := Options{
@@ -27,21 +39,22 @@ func TestBuildUserMessageWithStdin(t *testing.T) {
 	}
 
 	// BuildUserMessageを呼び出し
-	msg_err := BuildUserMessage(&options)
-
-	// Writer.Write()に渡せるよう，入力を[]byteに変換する．
-	input := []byte(inputData)
-	// 標準出力へ書き込む．
-	if n, err := os.Stdout.Write(input); err != nil {
-		t.Errorf("input is %v bytes, but only %v byte written", len(input), n)
-		return
-	}
-
-	if msg_err != nil {
+	err = BuildUserMessage(&options)
+	if err != nil {
 		t.Fatalf("BuildUserMessage() エラー: %v", err)
 	}
+
+	// エラーチャネルをチェック
+	select {
+	case err := <-errChan:
+		t.Fatalf("goroutine 内でエラーが発生しました: %v", err)
+	default:
+		// エラーなし
+	}
+
 	// 結果の確認
-	if options.UserMessage != " "+inputData {
+	expected := " " + inputData
+	if options.UserMessage != expected {
 		t.Errorf("UserMessageが正しく構築されていません。Expected: '%s', got: '%s'", inputData, options.UserMessage)
 	}
 }
