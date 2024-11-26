@@ -27,7 +27,7 @@ func TestBuildUserMessageWithStdin(t *testing.T) {
 	}
 
 	input := []byte(inputData)
-  // 標準出力へ書き込む．
+	// 標準出力へ書き込む．
 	if n, err := os.Stdout.Write(input); err != nil {
 		t.Errorf("input is %v bytes, but only %v byte written", len(input), n)
 		return
