@@ -266,3 +266,50 @@ func handleChatCompletion(client *openai.Client, promptConfig Prompt, conversati
 
 	return nil
 }
+
+// RecursiveGlob は再帰的なグロブパターンを展開します
+func RecursiveGlob(pattern string) ([]string, error) {
+	var matches []string
+
+	// パターンを分割
+	parts := strings.Split(pattern, "**")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("パターンの形式が正しくありません: %s", pattern)
+	}
+
+	// ベースディレクトリを取得
+	baseDir := parts[0]
+	if baseDir == "" {
+		baseDir = "."
+	}
+
+	subPattern := parts[1]
+
+	// ベースディレクトリから再帰的に探索
+	err := filepath.Walk(baseDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// ディレクトリはスキップ
+		if info.IsDir() {
+			return nil
+		}
+
+		// サブパターンにマッチするか確認
+		match, err := filepath.Match(subPattern, filepath.Base(path))
+		if err != nil {
+			return err
+		}
+		if match {
+			matches = append(matches, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return matches, nil
+}
