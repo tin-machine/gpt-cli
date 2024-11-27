@@ -109,13 +109,43 @@ func ParseCommandLineArgs() (Options, error) {
 
 	options.Args = flag.Args()
 
+	// ファイルパスのセットを保持
+	fileSet := make(map[string]struct{})
+
 	// アップロードするファイルのリストをパース
 	if options.UploadAndAddFilesStr != "" {
-		options.UploadAndAddFiles = strings.Split(options.UploadAndAddFilesStr, ",")
-		for i := range options.UploadAndAddFiles {
-			options.UploadAndAddFiles[i] = strings.TrimSpace(options.UploadAndAddFiles[i])
+		patterns := strings.Split(options.UploadAndAddFilesStr, ",")
+		for _, pattern := range patterns {
+			pattern = strings.TrimSpace(pattern)
+			var matches []string
+			var err error
+
+			if strings.Contains(pattern, "**") {
+				matches, err = RecursiveGlob(pattern)
+			} else {
+				matches, err = filepath.Glob(pattern)
+			}
+
+			if err != nil {
+				return options, fmt.Errorf("パターンの展開に失敗しました (%s): %w", pattern, err)
+			}
+
+			for _, match := range matches {
+				if _, exists := fileSet[match]; !exists {
+					fileSet[match] = struct{}{}
+					options.UploadAndAddFiles = append(options.UploadAndAddFiles, match)
+				}
+			}
+
 		}
 	}
+
+	// if options.UploadAndAddFilesStr != "" {
+	// 	options.UploadAndAddFiles = strings.Split(options.UploadAndAddFilesStr, ",")
+	// 	for i := range options.UploadAndAddFiles {
+	// 		options.UploadAndAddFiles[i] = strings.TrimSpace(options.UploadAndAddFiles[i])
+	// 	}
+	// }
 
 	// FileIDsStrを分割してFileIDsに設定
 	if options.FileIDsStr != "" {
