@@ -32,6 +32,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
 
       - name: バージョンを上げるコミットを作るため、現在のバージョンを読み込む
         id: get_version
