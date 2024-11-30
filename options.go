@@ -37,7 +37,7 @@ type Options struct {
 	UploadFilePath       string
 	UploadPurpose        string
 	DeleteFileID         string
-	DeleteFileName string
+	DeleteFileName       string
 	UploadAndAddFilesStr string
 	UploadAndAddFiles    []string
 	CreateAssistant      bool
