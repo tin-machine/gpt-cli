@@ -37,6 +37,7 @@ type Options struct {
 	UploadFilePath       string
 	UploadPurpose        string
 	DeleteFileID         string
+	DeleteFileName string
 	UploadAndAddFilesStr string
 	UploadAndAddFiles    []string
 	CreateAssistant      bool
@@ -81,7 +82,8 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.UploadFilePath, "upload-file", "", "OpenAIにアップロードするファイルのパスを指定")
 	flag.StringVar(&options.UploadPurpose, "upload-purpose", "assistants", "ファイルのアップロード目的を指定（例: fine-tune, answers, assistants）")
 	flag.BoolVar(&options.ListFiles, "list-files", false, "アップロードしたファイルの一覧を表示")
-	flag.StringVar(&options.DeleteFileID, "delete-file", "", "削除するファイルのIDを指定")
+	flag.StringVar(&options.DeleteFileID, "delete-file-id", "", "削除するファイルのIDを指定")
+	flag.StringVar(&options.DeleteFileName, "delete-file", "", "削除するファイルの名前を指定（ワイルドカード対応）")
 	flag.StringVar(&options.UploadAndAddFilesStr, "upload-and-add-to-vector", "", "アップロードするファイルのパスをカンマ区切りで指定し、自動的にベクトルストアに追加")
 	flag.StringVar(&options.AssistantID, "assistant-id", "", "操作するアシスタントのIDを指定")
 	flag.StringVar(&options.AssistantName, "assistant-name", "MyAssistant", "アシスタントの名前を指定")

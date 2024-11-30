@@ -143,14 +143,14 @@ func handleListFiles(client *openai.Client) error {
 	return nil
 }
 
-func handleDeleteFile(client *openai.Client, options Options) error {
-	err := DeleteUploadedFile(client, options.DeleteFileID)
-	if err != nil {
-		return fmt.Errorf("ファイルの削除に失敗しました: %v", err)
-	}
-	fmt.Printf("ファイルを削除しました。File ID: %s\n", options.DeleteFileID)
-	return nil
-}
+// func handleDeleteFile(client *openai.Client, options Options) error {
+// 	err := DeleteUploadedFile(client, options.DeleteFileID)
+// 	if err != nil {
+// 		return fmt.Errorf("ファイルの削除に失敗しました: %v", err)
+// 	}
+// 	fmt.Printf("ファイルを削除しました。File ID: %s\n", options.DeleteFileID)
+// 	return nil
+// }
 
 func handleVectorStoreAction(client *openai.Client, options Options) error {
 	switch options.VectorStoreAction {
@@ -209,3 +209,52 @@ func handleVectorStoreAction(client *openai.Client, options Options) error {
 		return fmt.Errorf("不正なベクトルストアアクションが指定されました: %s", options.VectorStoreAction)
 	}
 }
+
+// ファイル名でファイルを削除するためのヘルパー関数
+func DeleteFilesByName(client *openai.Client, pattern string) error {
+    files, err := ListUploadedFiles(client)
+    if err != nil {
+        return fmt.Errorf("ファイル一覧の取得に失敗しました: %w", err)
+    }
+
+    var errors []error
+    for _, file := range files.Files {
+        match, err := filepath.Match(pattern, file.FileName)
+        if err != nil {
+            return fmt.Errorf("パターンのマッチングに失敗しました: %w", err)
+        }
+        if match {
+            err := DeleteUploadedFile(client, file.ID)
+            if err != nil {
+                errors = append(errors, fmt.Errorf("ファイルの削除に失敗しました。File ID: %s, エラー: %w", file.ID, err))
+            } else {
+                fmt.Printf("ファイルを削除しました。Name: %s, File ID: %s\n", file.FileName, file.ID)
+            }
+        }
+    }
+    if len(errors) > 0 {
+        return fmt.Errorf("いくつかのファイルが削除できませんでした: %v", errors)
+    }
+    return nil
+}
+
+// handleDeleteFile関数を修正して、名前による削除をサポートする
+func handleDeleteFile(client *openai.Client, options Options) error {
+    if options.DeleteFileID != "" {
+        err := DeleteUploadedFile(client, options.DeleteFileID)
+        if err != nil {
+            return fmt.Errorf("ファイルの削除に失敗しました: %v", err)
+        }
+        fmt.Printf("ファイルを削除しました。File ID: %s\n", options.DeleteFileID)
+        return nil
+    }
+
+    if options.DeleteFileName != "" {
+        err := DeleteFilesByName(client, options.DeleteFileName)
+        if err != nil {
+            return fmt.Errorf("ファイルの名前による削除に失敗しました: %v", err)
+        }
+    }
+    return nil
+}
+
