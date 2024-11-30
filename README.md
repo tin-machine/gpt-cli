@@ -24,6 +24,11 @@ export OPENAI_API_KEY="your-api-key-here"
 gpt-cli "こんにちは！"
 ```
 
+- **標準入力から入力**:
+```
+echo "こんにちは！" | gpt-cli
+```
+
 - **システムプロンプトとユーザープロンプトを指定している場合**:
 ```
 gpt-cli -s "なるべく陽気に答えてください" -u "こんにちは"
@@ -44,7 +49,7 @@ gpt-cli -show-history gpt-cli改修
 gpt-cli -p prompt1
 ```
 
-- **ファイルを追加して会話**:
+- **ファイルをユーザープロンプトに追加して会話**:
 ```
 gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何か改修できる点を教えてください"
 ```
@@ -72,7 +77,12 @@ gpt-cli --upload-file "path/to/file.txt" --upload-purpose "fine-tune"
 - **複数ファイルをVector-storeにアップロード**:
   - --upload-and-add-to-vector: ファイルをカンマ区切り
   - --vector-store-name: ベクトルストアの名前
-  - --upload-purpose: アップロード目的
+  - --upload-purpose: アップロード目的を引数に取る
+    - fine-tune: ファインチューニング
+    - fine-tune-results: ファインチューニング結果を置く
+    - assistants: アシスタント
+    - assistants_output: アシスタントの結果
+    - batch: バッチ処理
 
 ```bash
 gpt-cli --upload-and-add-to-vector assistant_handler.go,config.go,config_loader.go,file_handler.go,main.go,openai_client.go,options.go,prompt_config.go,tool_config.go,utils.go,vector_store_handler.go -vector-store-name add-option -upload-purpose assistants
@@ -111,7 +121,7 @@ gpt-cli --assistant-id "assistant_id" --message "こんにちは！"
 - `--vector-store-name`: 作成または操作するベクトルストアの名前を指定。
 - `--vector-store-id`: 操作するベクトルストアのIDを指定。
 - `--upload-file`: OpenAIにアップロードするファイルのパスを指定。
-- `--upload-purpose`: ファイルのアップロード目的を指定（例：`fine-tune`など）。
+- `--upload-purpose`: ファイルのアップロード目的を指定（例：`fine-tune`, `assistants`, `batch`）。
 - `--list-files`: アップロードしたファイルの一覧を表示。
 - `--delete-file`: 削除するファイルのIDを指定。
 - `--upload-and-add-to-vector`: ファイルをアップロードし、ベクトルストアに追加。

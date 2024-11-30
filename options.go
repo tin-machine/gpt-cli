@@ -79,7 +79,7 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.FileID, "file-id", "", "ベクトルストアに追加するファイルのIDを指定")
 	flag.StringVar(&options.FileIDsStr, "file-ids", "", "ベクトルストアに追加するファイルのIDをカンマ区切りで指定")
 	flag.StringVar(&options.UploadFilePath, "upload-file", "", "OpenAIにアップロードするファイルのパスを指定")
-	flag.StringVar(&options.UploadPurpose, "upload-purpose", "fine-tune", "ファイルのアップロード目的を指定（例: fine-tune, answers）")
+	flag.StringVar(&options.UploadPurpose, "upload-purpose", "assistants", "ファイルのアップロード目的を指定（例: fine-tune, answers, assistants）")
 	flag.BoolVar(&options.ListFiles, "list-files", false, "アップロードしたファイルの一覧を表示")
 	flag.StringVar(&options.DeleteFileID, "delete-file", "", "削除するファイルのIDを指定")
 	flag.StringVar(&options.UploadAndAddFilesStr, "upload-and-add-to-vector", "", "アップロードするファイルのパスをカンマ区切りで指定し、自動的にベクトルストアに追加")

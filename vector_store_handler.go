@@ -174,7 +174,7 @@ func uploadAndAttachFile(client *openai.Client, assistantID string, options Opti
 	fileRequest := openai.FileRequest{
 		FileName: filepath.Base(options.FilePath),
 		FilePath: options.FilePath,
-		Purpose:  "fine-tune",
+		Purpose:  "assistants",
 	}
 
 	file, err := client.CreateFile(ctx, fileRequest)
