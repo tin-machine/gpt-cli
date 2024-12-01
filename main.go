@@ -128,6 +128,15 @@ func Run() error {
 		return handleVectorStoreAction(client, options)
 	}
 
+	if options.DeleteFileName != "" {
+		return handleDeleteFile(client, options)
+	}
+
 	// OpenAI API へのリクエスト
-	return handleChatCompletion(client, promptConfig, conversationHistory, options)
+	if options.UserMessage != "" {
+	  return handleChatCompletion(client, promptConfig, conversationHistory, options)
+	}
+	
+	// どの条件にも一致しない場合のデフォルトの戻り値
+	return nil
 }
