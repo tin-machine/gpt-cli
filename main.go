@@ -134,9 +134,9 @@ func Run() error {
 
 	// OpenAI API へのリクエスト
 	if options.UserMessage != "" {
-	  return handleChatCompletion(client, promptConfig, conversationHistory, options)
+		return handleChatCompletion(client, promptConfig, conversationHistory, options)
 	}
-	
+
 	// どの条件にも一致しない場合のデフォルトの戻り値
 	return nil
 }
