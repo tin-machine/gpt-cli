@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+const (
+	DefaultVectorStoreName = "Default Vector Store"
+	DefaultVectorStoreID   = "default-vector-store-id"
+)
+
 // GetPromptConfig はプロンプトの設定を取得します
 func GetPromptConfig(config Config, options Options) (Prompt, error) {
 	var promptConfig Prompt
@@ -13,6 +18,19 @@ func GetPromptConfig(config Config, options Options) (Prompt, error) {
 		promptConfig, ok = config.Prompts[options.PromptOption]
 		if !ok {
 			return promptConfig, fmt.Errorf("プロンプトオプション %s は設定ファイルに定義されていません", options.PromptOption)
+		}
+	}
+
+	// ベクトルストア設定を取得
+	if options.VectorStoreAction != "" {
+		if vectorStoreConfig, exist := config.VectorStores[options.VectorStoreAction]; exist {
+			options.VectorStoreName = vectorStoreConfig.Name
+			options.VectorStoreID = vectorStoreConfig.ID
+		} else {
+			// 設定が見つからない場合はエラーを出すか、デフォルト値を使用
+			options.VectorStoreName = DefaultVectorStoreName
+			options.VectorStoreID = DefaultVectorStoreID
+			logger.Info("ベクトルストア設定が見つからなかったため、デフォルト設定を使用します。")
 		}
 	}
 

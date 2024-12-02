@@ -24,7 +24,7 @@ export OPENAI_API_KEY="your-api-key-here"
 gpt-cli "こんにちは！"
 ```
 
-- **標準入力から入力**:
+- **標準入力から**:
 ```
 echo "こんにちは！" | gpt-cli
 ```
@@ -56,7 +56,7 @@ gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何�
 
 ## Assistant APIを使う
 
-- **ベクトルストアを追加する例**:
+- **ベクトルストアをする例**:
 
 ```bash
 gpt-cli --vector-store-name "my_vector_store" --vector-store-action create
@@ -67,6 +67,12 @@ gpt-cli --vector-store-name "my_vector_store" --vector-store-action create
   - list
   - delete
   - add-file
+
+- **ベクトルストア作って中にファイルを追加する例**:
+
+```
+gpt-cli --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
+```
 
 - **ベクトルストアの一覧を表示する例**:
 
@@ -83,7 +89,7 @@ gpt-cli --vector-store-action delete --vector-store-id <ベクトルストアの
 - **ファイルをアップロードする例**:
 
 ```bash
-gpt-cli --upload-file "path/to/file.txt" --upload-purpose "fine-tune"
+gpt-cli --upload-file "path/to/file.txt" --upload-purpose "assistants"
 ```
 
 - **複数ファイルをVector-storeにアップロードする例**:

@@ -29,6 +29,14 @@ func Float32Ptr(f float32) *float32 {
 func createNewAssistant(client *openai.Client, options Options) (string, error) {
 	ctx := context.Background()
 
+	// Toolsや関連する設定の宣言
+	var vectorStoreID string
+	if options.VectorStoreID != "" {
+		vectorStoreID = options.VectorStoreID
+	} else {
+		vectorStoreID = DefaultVectorStoreID // オプションが提供されない場合のデフォルト
+	}
+
 	assistantRequest := openai.AssistantRequest{
 		Name:         &options.AssistantName,
 		Description:  &options.AssistantDescription,
@@ -40,6 +48,11 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 			},
 			{
 				Type: openai.AssistantToolTypeFileSearch,
+			},
+		},
+		ToolResources: &openai.AssistantToolResource{
+			FileSearch: &openai.AssistantToolFileSearch{
+				VectorStoreIDs: []string{vectorStoreID},
 			},
 		},
 		Temperature: Float32Ptr(float32(options.Temperature)),

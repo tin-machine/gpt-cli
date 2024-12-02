@@ -24,14 +24,20 @@ type Prompt struct {
 	Tools       []string `yaml:"tools"`
 }
 
+type VectorStoreConfig struct {
+	Name string `yaml:"name"`
+	ID   string `yaml:"id"`
+}
+
 // Configはアプリケーション全体の設定を保持するための構造体で、以下のフィールドを含みます:
 // - LogDir: ログファイルを保存するディレクトリ
 // - AutoSaveLogs: ログの自動保存を有効にするかどうか
 // - Prompts: プロンプト名とその内容のマッピング
 type Config struct {
-	LogDir       string            `yaml:"logDir"`
-	AutoSaveLogs bool              `yaml:"autoSaveLogs"`
-	Prompts      map[string]Prompt `yaml:"prompts"`
+	LogDir       string                       `yaml:"logDir"`
+	AutoSaveLogs bool                         `yaml:"autoSaveLogs"`
+	Prompts      map[string]Prompt            `yaml:"prompts"`
+	VectorStores map[string]VectorStoreConfig `yaml:"vectorStores"`
 }
 
 // LoadConfigは、指定されたファイルパスから設定を読み込む関数です。
