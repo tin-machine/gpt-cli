@@ -118,6 +118,12 @@ gpt-cli -delete-file '*.go'
 gpt-cli --create-assistant --assistant-name "MyAssistant" --assistant-description "これはテスト用のアシスタントです。" --user-message "あなたはユーザーを助けるフレンドリーなアシスタントです。"
 ```
 
+- アシスタント作成時、vectore-storeにアップロードしたファイルを追加する例:
+
+```
+gpt-cli --create-assistant  --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
+```
+
 - **アシスタントと対話する例**:
 
 ```bash
