@@ -37,6 +37,19 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 		vectorStoreID = DefaultVectorStoreID // オプションが提供されない場合のデフォルト
 	}
 
+	// ベクトルストア名で取得または作成
+	if options.VectorStoreName != "" {
+		vectorStore, err := GetOrCreateVectorStoreByName(client, options.VectorStoreName)
+		if err != nil {
+			logger.Error("ベクトルストアの取得/作成中にエラーが発生しました: %v", err)
+			return "", fmt.Errorf("ベクトルストアの取得または作成に失敗しました: %w", err)
+		}
+		vectorStoreID = vectorStore.ID
+	} else {
+		// デフォルトのベクトルストアIDを使用
+		vectorStoreID = DefaultVectorStoreID
+	}
+
 	assistantRequest := openai.AssistantRequest{
 		Name:         &options.AssistantName,
 		Description:  &options.AssistantDescription,

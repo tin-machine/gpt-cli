@@ -106,6 +106,12 @@ gpt-cli --upload-file "path/to/file.txt" --upload-purpose "assistants"
 gpt-cli --upload-and-add-to-vector assistant_handler.go,config.go,config_loader.go,file_handler.go,main.go,openai_client.go,options.go,prompt_config.go,tool_config.go,utils.go,vector_store_handler.go -vector-store-name add-option -upload-purpose assistants
 ```
 
+- ファイルを削除する例:
+
+```
+gpt-cli -delete-file '*.go'
+```
+
 - **アシスタントを作成する例**:
 
 ```bash
