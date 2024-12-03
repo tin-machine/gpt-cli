@@ -59,6 +59,66 @@ func Run() error {
 		return err
 	}
 
+	// 会話履歴の読み込み
+	conversationHistory, err := LoadConversationHistory(options.HistoryFile)
+	if err != nil {
+		return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
+	}
+
+	// OpenAI API クライアントの初期化
+	client, err := NewOpenAIClient(options.Timeout)
+	if err != nil {
+		return err
+	}
+
+	// アシスタントの作成
+	if options.CreateAssistant {
+		err := handleCreateAssistant(client, options)
+		if err != nil {
+			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+		}
+	}
+
+	// ファイルアップロードとベクトルストア追加
+	if len(options.UploadAndAddFiles) > 0 {
+		err := handleUploadAndAddFiles(client, options)
+		if err != nil {
+			return fmt.Errorf("ファイルのアップロードまたは追加に失敗しました: %v", err)
+		}
+	}
+
+	// ファイルアップロードとベクトルストア追加
+	if options.AssistantID != "" {
+		err := handleUploadAndAddFiles(client, options)
+		if err != nil {
+			return fmt.Errorf("ファイルのアップロードまたは追加に失敗しました: %v", err)
+		}
+	}
+
+	// 他のオプションに応じた処理
+	if options.UploadFilePath != "" {
+		err := handleUploadFile(client, options)
+		if err != nil {
+			return fmt.Errorf("ファイルのアップロードに失敗しました: %v", err)
+		}
+	}
+
+	if options.ListFiles {
+		return handleListFiles(client)
+	}
+
+	if options.DeleteFileID != "" {
+		return handleDeleteFile(client, options)
+	}
+
+	if options.VectorStoreAction != "" {
+		return handleVectorStoreAction(client, options)
+	}
+
+	if options.DeleteFileName != "" {
+		return handleDeleteFile(client, options)
+	}
+
 	// コンテキストメッセージの作成
 	messages, err := CreateMessages(promptConfig)
 	if err != nil {
@@ -68,12 +128,6 @@ func Run() error {
 	// デフォルトプロンプトを設定
 	if promptConfig.System == "" && promptConfig.User == "" {
 		promptConfig = GetDefaultPromptConfig()
-	}
-
-	// 会話履歴の読み込み
-	conversationHistory, err := LoadConversationHistory(options.HistoryFile)
-	if err != nil {
-		return fmt.Errorf("会話履歴の読み込みに失敗しました: %w", err)
 	}
 
 	// show-history オプションの処理
@@ -92,45 +146,6 @@ func Run() error {
 
 	// 会話履歴に新しいメッセージを追加
 	conversationHistory = append(conversationHistory, messages...)
-
-	// OpenAI API クライアントの初期化
-	client, err := NewOpenAIClient(options.Timeout)
-	if err != nil {
-		return err
-	}
-
-	// 各オプションに応じた処理を実行
-	if options.CreateAssistant {
-		return handleCreateAssistant(client, options)
-	}
-
-	if options.AssistantID != "" {
-		return handleAssistantInteraction(client, options)
-	}
-
-	if len(options.UploadAndAddFiles) > 0 {
-		return handleUploadAndAddFiles(client, options)
-	}
-
-	if options.UploadFilePath != "" {
-		return handleUploadFile(client, options)
-	}
-
-	if options.ListFiles {
-		return handleListFiles(client)
-	}
-
-	if options.DeleteFileID != "" {
-		return handleDeleteFile(client, options)
-	}
-
-	if options.VectorStoreAction != "" {
-		return handleVectorStoreAction(client, options)
-	}
-
-	if options.DeleteFileName != "" {
-		return handleDeleteFile(client, options)
-	}
 
 	// OpenAI API へのリクエスト
 	if options.UserMessage != "" {
