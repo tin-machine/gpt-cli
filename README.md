@@ -24,7 +24,7 @@ export OPENAI_API_KEY="your-api-key-here"
 gpt-cli "こんにちは！"
 ```
 
-- **標準入力から入力**:
+- **標準入力から**:
 ```
 echo "こんにちは！" | gpt-cli
 ```
@@ -56,7 +56,7 @@ gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何�
 
 ## Assistant APIを使う
 
-- **ベクトルストアを追加する例**:
+- **ベクトルストアをする例**:
 
 ```bash
 gpt-cli --vector-store-name "my_vector_store" --vector-store-action create
@@ -67,6 +67,12 @@ gpt-cli --vector-store-name "my_vector_store" --vector-store-action create
   - list
   - delete
   - add-file
+
+- **ベクトルストア作って中にファイルを追加する例**:
+
+```
+gpt-cli --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
+```
 
 - **ベクトルストアの一覧を表示する例**:
 
@@ -83,7 +89,7 @@ gpt-cli --vector-store-action delete --vector-store-id <ベクトルストアの
 - **ファイルをアップロードする例**:
 
 ```bash
-gpt-cli --upload-file "path/to/file.txt" --upload-purpose "fine-tune"
+gpt-cli --upload-file "path/to/file.txt" --upload-purpose "assistants"
 ```
 
 - **複数ファイルをVector-storeにアップロードする例**:
@@ -100,10 +106,22 @@ gpt-cli --upload-file "path/to/file.txt" --upload-purpose "fine-tune"
 gpt-cli --upload-and-add-to-vector assistant_handler.go,config.go,config_loader.go,file_handler.go,main.go,openai_client.go,options.go,prompt_config.go,tool_config.go,utils.go,vector_store_handler.go -vector-store-name add-option -upload-purpose assistants
 ```
 
+- ファイルを削除する例:
+
+```
+gpt-cli -delete-file '*.go'
+```
+
 - **アシスタントを作成する例**:
 
 ```bash
 gpt-cli --create-assistant --assistant-name "MyAssistant" --assistant-description "これはテスト用のアシスタントです。" --user-message "あなたはユーザーを助けるフレンドリーなアシスタントです。"
+```
+
+- アシスタント作成時、vectore-storeにアップロードしたファイルを追加する例:
+
+```
+gpt-cli --create-assistant  --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
 ```
 
 - **アシスタントと対話する例**:

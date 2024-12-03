@@ -195,3 +195,26 @@ func uploadAndAttachFile(client *openai.Client, assistantID string, options Opti
 	fmt.Println("アシスタントにファイルが追加されました。")
 	return nil
 }
+
+// GetOrCreateVectorStoreByName は指定した名前のベクトルストアを取得するか、新しく作成します
+func GetOrCreateVectorStoreByName(client *openai.Client, name string) (*openai.VectorStore, error) {
+	// 既存のVectorStoreを一覧取得
+	vsList, err := ListVectorStores(client)
+	if err != nil {
+		return nil, fmt.Errorf("ベクトルストアの一覧取得に失敗しました: %v", err)
+	}
+
+	// 名前が一致するVectorStoreを検索
+	for _, vs := range vsList {
+		if vs.Name == name {
+			return &vs, nil
+		}
+	}
+
+	// 見つからない場合は新規作成
+	vs, err := CreateVectorStore(client, name)
+	if err != nil {
+		return nil, fmt.Errorf("ベクトルストアの作成に失敗しました: %v", err)
+	}
+	return vs, nil
+}
