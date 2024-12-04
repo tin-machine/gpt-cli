@@ -73,7 +73,7 @@ func Run() error {
 
 	// アシスタントの作成
 	if options.CreateAssistant {
-		err := handleCreateAssistant(client, options)
+		err := handleCreateAssistant(client, options, config)
 		if err != nil {
 			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
 		}
