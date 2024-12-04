@@ -29,6 +29,15 @@ type VectorStoreConfig struct {
 	ID   string `yaml:"id"`
 }
 
+type AssistantConfig struct {
+	Name            string  `yaml:"name"`
+	Description     string  `yaml:"description"`
+	Model           string  `yaml:"model"`
+	Instruction     string  `yaml:"instruction"`
+	Temperature     float64 `yaml:"temperature"`
+	VectorStoreName string  `yaml:"vectorStoreName"`
+}
+
 // Configはアプリケーション全体の設定を保持するための構造体で、以下のフィールドを含みます:
 // - LogDir: ログファイルを保存するディレクトリ
 // - AutoSaveLogs: ログの自動保存を有効にするかどうか
@@ -38,6 +47,7 @@ type Config struct {
 	AutoSaveLogs bool                         `yaml:"autoSaveLogs"`
 	Prompts      map[string]Prompt            `yaml:"prompts"`
 	VectorStores map[string]VectorStoreConfig `yaml:"vectorStores"`
+	Assistants   map[string]AssistantConfig   `yaml:"assistants"`
 }
 
 // LoadConfigは、指定されたファイルパスから設定を読み込む関数です。

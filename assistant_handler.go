@@ -234,18 +234,39 @@ func interactiveChatWithAssistant(client *openai.Client, assistantID string, opt
 	return nil
 }
 
-// handleCreateAssistantは、ユーザーが新しいアシスタントを作成する要求を処理します。
-// この関数では、OpenAI APIクライアントとOptionsが渡されて、アシスタントを作成するための内部関数を呼び出します。
-// アシスタントが作成されると、そのIDがコンソールに表示されます。
-// もしアシスタントの作成に失敗した場合は、エラーメッセージが返されます。
-func handleCreateAssistant(client *openai.Client, options Options) error {
-	assistantID, err := createNewAssistant(client, options)
+func handleCreateAssistant(client *openai.Client, options Options, config Config) error {
+	assistantConfig, ok := config.Assistants[options.PromptOption] // 例えば、コマンドラインオプションとして指定されたassistant名を使う場合
+	if !ok {
+		return fmt.Errorf("指定されたアシスタントの設定が見つかりません: %s", options.PromptOption)
+	}
+
+	assistantID, err := createNewAssistant(client, Options{
+		AssistantName:        assistantConfig.Name,
+		AssistantDescription: assistantConfig.Description,
+		Model:                assistantConfig.Model,
+		Instruction:          assistantConfig.Instruction,
+		Temperature:          assistantConfig.Temperature,
+		VectorStoreName:      assistantConfig.VectorStoreName,
+	})
 	if err != nil {
 		return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
 	}
 	fmt.Printf("新しいアシスタントが作成されました。ID: %s\n", assistantID)
 	return nil
 }
+
+// // handleCreateAssistantは、ユーザーが新しいアシスタントを作成する要求を処理します。
+// // この関数では、OpenAI APIクライアントとOptionsが渡されて、アシスタントを作成するための内部関数を呼び出します。
+// // アシスタントが作成されると、そのIDがコンソールに表示されます。
+// // もしアシスタントの作成に失敗した場合は、エラーメッセージが返されます。
+// func handleCreateAssistant(client *openai.Client, options Options) error {
+// 	assistantID, err := createNewAssistant(client, options)
+// 	if err != nil {
+// 		return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+// 	}
+// 	fmt.Printf("新しいアシスタントが作成されました。ID: %s\n", assistantID)
+// 	return nil
+// }
 
 // handleAssistantInteractionは、アシスタントとのインタラクションを処理します。
 // この関数では、ユーザーが送信したメッセージの有無に応じて、アシスタントとの単発チャットまたはインタラクティブなあるいは対話モードを開始します。
