@@ -56,6 +56,18 @@ gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何�
 
 ## Assistant APIを使う
 
+- **ファイルをアップロードする例**:
+
+```bash
+gpt-cli --upload-file "path/to/file.txt" --upload-purpose "assistants"
+```
+
+- ファイルを削除する例:
+
+```bash
+gpt-cli -delete-file '*.go'
+```
+
 - **ベクトルストアをする例**:
 
 ```bash
@@ -70,7 +82,7 @@ gpt-cli --vector-store-name "my_vector_store" --vector-store-action create
 
 - **ベクトルストア作って中にファイルを追加する例**:
 
-```
+```bash
 gpt-cli --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
 ```
 
@@ -82,14 +94,8 @@ gpt-cli --vector-store-action list
 
 - ベクトルストアを削除する例:
 
-```
-gpt-cli --vector-store-action delete --vector-store-id <ベクトルストアのID>
-```
-
-- **ファイルをアップロードする例**:
-
 ```bash
-gpt-cli --upload-file "path/to/file.txt" --upload-purpose "assistants"
+gpt-cli --vector-store-action delete --vector-store-id <ベクトルストアのID>
 ```
 
 - **複数ファイルをVector-storeにアップロードする例**:
@@ -106,12 +112,6 @@ gpt-cli --upload-file "path/to/file.txt" --upload-purpose "assistants"
 gpt-cli --upload-and-add-to-vector assistant_handler.go,config.go,config_loader.go,file_handler.go,main.go,openai_client.go,options.go,prompt_config.go,tool_config.go,utils.go,vector_store_handler.go -vector-store-name add-option -upload-purpose assistants
 ```
 
-- ファイルを削除する例:
-
-```
-gpt-cli -delete-file '*.go'
-```
-
 - **アシスタントを作成する例**:
 
 ```bash
@@ -120,7 +120,7 @@ gpt-cli --create-assistant --assistant-name "MyAssistant" --assistant-descriptio
 
 - アシスタント作成時、vectore-storeにアップロードしたファイルを追加する例:
 
-```
+```bash
 gpt-cli --create-assistant  --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
 ```
 
