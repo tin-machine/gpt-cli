@@ -130,6 +130,30 @@ gpt-cli --create-assistant  --upload-and-add-to-vector '*.go' --vector-store-nam
 gpt-cli --assistant-id "assistant_id" --message "こんにちは！"
 ```
 
+- アシスタントの設定をconfig.yamlで行う:
+
+config.yamlからassistantsの設定を探してアシスタントを操作する
+
+```
+gpt-cli -a myassistant1
+```
+
+config.yamlの設定は下記の通り:
+```
+vectorStores:
+  myVectorStore:
+    name: "my_vectore_store"
+
+ssistants:
+  myassistant1:  # アシスタントのキー名、コマンドラインから指定する際はこのキーを使用します
+    name: "My First Assistant"  # アシスタントの名前
+    description: "This is a description of my first assistant."  # アシスタントの説明
+    model: "gpt-3.5-turbo"  # 使用するAIモデル
+    instruction: "あなたはユーザーを助けるアシスタントです。"  # アシスタントに与える初期の指示
+    temperature: 0.7  # モデルの応答の多様性を制御するパラメータ
+    vectorStoreName: "my_vector_store"  # 関連付けたいベクトルストアの名前
+```
+
 # オプション
 
 取り得るオプションですが
