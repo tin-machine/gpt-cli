@@ -235,7 +235,7 @@ func interactiveChatWithAssistant(client *openai.Client, assistantID string, opt
 }
 
 func handleCreateAssistant(client *openai.Client, options Options, config Config) error {
-	assistantConfig, ok := config.Assistants[options.PromptOption] // 例えば、コマンドラインオプションとして指定されたassistant名を使う場合
+	assistantConfig, ok := config.Assistants[options.AssistantOption] // 例えば、コマンドラインオプションとして指定されたassistant名を使う場合
 	if !ok {
 		return fmt.Errorf("指定されたアシスタントの設定が見つかりません: %s", options.PromptOption)
 	}
