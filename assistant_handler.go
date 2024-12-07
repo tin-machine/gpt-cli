@@ -273,19 +273,101 @@ func handleCreateAssistant(client *openai.Client, options Options, config Config
 // clientはOpenAI APIクライアント、optionsにはユーザーの入力や設定が含まれます。
 // いずれかの操作の実行中にエラーが発生した場合は、その内容が返されます。
 func handleAssistantInteraction(client *openai.Client, options Options) error {
-	if options.Message != "" {
+	var assistantID string
+	if options.AssistantID != "" {
+		assistantID = options.AssistantID
+	} else if options.AssistantName != "" {
+		id, err := GetAssistantIDByName(client, options.AssistantName)
+		if err != nil {
+			return err
+		}
+		assistantID = id
+	} else {
+		return fmt.Errorf("アシスタントのIDまたは名前を指定してください (--assistant-id または --assistant-name)")
+	}
+
+	// options.Messageをoptions.UserMessageに変更
+	if options.UserMessage != "" {
 		// 単一のメッセージを送信
-		err := chatWithAssistant(client, options.AssistantID, options)
+		options.AssistantID = assistantID
+		err := chatWithAssistant(client, assistantID, options)
 		if err != nil {
 			return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
 		}
 		return nil
 	} else {
 		// 対話モードを開始
-		err := interactiveChatWithAssistant(client, options.AssistantID, options)
+		options.AssistantID = assistantID
+		err := interactiveChatWithAssistant(client, assistantID, options)
 		if err != nil {
 			return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
 		}
 		return nil
 	}
+
+	// if options.Message != "" {
+	// 	// 単一のメッセージを送信
+	// 	err := chatWithAssistant(client, options.AssistantID, options)
+	// 	if err != nil {
+	// 		return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
+	// 	}
+	// 	return nil
+	// } else {
+	// 	// 対話モードを開始
+	// 	err := interactiveChatWithAssistant(client, options.AssistantID, options)
+	// 	if err != nil {
+	// 		return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
+	// 	}
+	// 	return nil
+	// }
+}
+
+// GetAssistantIDByName は指定された名前のアシスタントのIDを取得します
+func GetAssistantIDByName(client *openai.Client, name string) (string, error) {
+	ctx := context.Background()
+
+	// ページネーションのパラメータを初期化
+	limit := 100 // 一度に取得するアシスタントの数
+	var order *string = nil
+	var after *string = nil
+	var before *string = nil
+
+	for {
+		// アシスタント一覧を取得
+		assistantsList, err := client.ListAssistants(ctx, &limit, order, after, before)
+		if err != nil {
+			return "", fmt.Errorf("アシスタント一覧の取得に失敗しました: %w", err)
+		}
+
+		// 名前が一致するアシスタントを検索
+		for _, assistant := range assistantsList.Assistants {
+			if assistant.Name != nil && *assistant.Name == name {
+				return assistant.ID, nil
+			}
+		}
+
+		// 次のページがあるか確認
+		if assistantsList.HasMore && assistantsList.LastID != nil {
+			after = assistantsList.LastID
+		} else {
+			// すべてのアシスタントを検索済み
+			break
+		}
+	}
+
+	return "", fmt.Errorf("指定された名前のアシスタントが見つかりませんでした: %s", name)
+
+	// // アシスタント一覧を取得
+	// assistants, err := client.ListAssistants(ctx, openai.Pagination{})
+	// if err != nil {
+	//   return "", fmt.Errorf("アシスタント一覧の取得に失敗しました: %w", err)
+	// }
+
+	// // 名前が一致するアシスタントを検索
+	// for _, assistant := range assistants.Assistants {
+	//   if assistant.Name != nil && *assistant.Name == name {
+	//     return assistant.ID, nil
+	//   }
+	// }
+	// return "", fmt.Errorf("指定された名前のアシスタントが見つかりませんでした: %s", name)
 }
