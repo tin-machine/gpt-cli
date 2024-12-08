@@ -77,7 +77,7 @@ func Run() error {
 	}
 
 	// アシスタントの作成または取得
-	if options.AssistantOption != "" {
+	if options.AssistantName != "" {
 		// アシスタントを作成または取得
 		err := handleCreateAssistant(client, options, config)
 		if err != nil {

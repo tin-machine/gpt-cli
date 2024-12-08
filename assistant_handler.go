@@ -236,9 +236,11 @@ func interactiveChatWithAssistant(client *openai.Client, assistantID string, opt
 }
 
 func handleCreateAssistant(client *openai.Client, options Options, config Config) error {
-	assistantConfig, ok := config.Assistants[options.AssistantOption] // 例えば、コマンドラインオプションとして指定されたassistant名を使う場合
+	assistantConfig, ok := config.Assistants[options.AssistantName] // 例えば、コマンドラインオプションとして指定されたassistant名を使う場合
+	logger.Debug("handleCreateAssistantです、options.AssistantName:\n%s", options.AssistantName)
+	logger.Debug("handleCreateAssistantです、config.Assistants:\n%s", config.Assistants)
 	if !ok {
-		return fmt.Errorf("指定されたアシスタントの設定が見つかりません: %s", options.PromptOption)
+		return fmt.Errorf("指定されたアシスタントの設定が見つかりません: %s", options.AssistantName)
 	}
 
 	assistantID, err := createNewAssistant(client, Options{
@@ -278,6 +280,7 @@ func handleAssistantInteraction(client *openai.Client, options Options) error {
 	if options.AssistantID != "" {
 		assistantID = options.AssistantID
 	} else if options.AssistantName != "" {
+		logger.Debug("handleAssistantInteractionです、AssistantName:\n%s", options.AssistantName)
 		id, err := GetAssistantIDByName(client, options.AssistantName)
 		if err != nil {
 			return err
@@ -292,6 +295,7 @@ func handleAssistantInteraction(client *openai.Client, options Options) error {
 		// 単一のメッセージを送信
 		options.AssistantID = assistantID
 		err := chatWithAssistant(client, assistantID, options)
+		logger.Debug("handleAssistantInteractionです、options.UserMessage:\n%s", options.UserMessage)
 		if err != nil {
 			return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
 		}
