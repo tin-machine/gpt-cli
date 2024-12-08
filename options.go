@@ -45,7 +45,6 @@ type Options struct {
 	Message              string
 	AssistantName        string
 	AssistantDescription string
-	AssistantOption      string
 	Instruction          string
 	FilePath             string
 	ToolConfigPath       string
@@ -86,15 +85,14 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.DeleteFileID, "delete-file-id", "", "削除するファイルのIDを指定")
 	flag.StringVar(&options.DeleteFileName, "delete-file", "", "削除するファイルの名前を指定（ワイルドカード対応）")
 	flag.StringVar(&options.UploadAndAddFilesStr, "upload-and-add-to-vector", "", "アップロードするファイルのパスをカンマ区切りで指定し、自動的にベクトルストアに追加")
-	flag.StringVar(&options.AssistantID, "assistant-id", "", "操作するアシスタントのIDを指定")
+	flag.BoolVar(&options.CreateAssistant, "create-assistant", false, "新しいアシスタントを作成する")
 	flag.StringVar(&options.AssistantName, "assistant-name", "MyAssistant", "アシスタントの名前を指定")
+	flag.StringVar(&options.AssistantID, "assistant-id", "", "操作するアシスタントのIDを指定")
 	flag.StringVar(&options.AssistantDescription, "assistant-description", "これはアシスタントの説明です。", "アシスタントの説明を指定")
-	flag.StringVar(&options.AssistantOption, "a", "", "config.yamlにあるアシスタントを選択")
+	flag.Float64Var(&options.Temperature, "temperature", 0.7, "モデルの温度パラメータを指定")
 	flag.StringVar(&options.Instruction, "instruction", "あなたはユーザーを助けるアシスタントです。", "アシスタントへの指示を指定")
 	flag.StringVar(&options.FilePath, "file-path", "", "アップロードするファイルのパスを指定")
 	flag.StringVar(&options.UserMessage, "user-message", "", "ユーザーからのメッセージを指定")
-	flag.Float64Var(&options.Temperature, "temperature", 0.7, "モデルの温度パラメータを指定")
-	flag.BoolVar(&options.CreateAssistant, "create-assistant", false, "新しいアシスタントを作成する")
 	flag.StringVar(&options.Message, "message", "", "アシスタントに送信するメッセージを指定")
 	// flag.IntVar(&options.MaxTokens, "max-tokens", 16384, "Max tokens to generate in the completion")
 
@@ -259,7 +257,6 @@ func (o Options) String() string {
 	sb.WriteString(fmt.Sprintf("	Message: %s\n", o.Message))
 	sb.WriteString(fmt.Sprintf("	AssistantName: %s\n", o.AssistantName))
 	sb.WriteString(fmt.Sprintf("	AssistantDescription: %s\n", o.AssistantDescription))
-	sb.WriteString(fmt.Sprintf("  AssistantOption: %s\n", o.AssistantOption))
 	sb.WriteString(fmt.Sprintf("	Instruction: %s\n", o.Instruction))
 	sb.WriteString(fmt.Sprintf("	FilePath: %s\n", o.FilePath))
 	sb.WriteString(fmt.Sprintf("	ToolConfigPath: %s\n", o.ToolConfigPath))
