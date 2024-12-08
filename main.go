@@ -59,6 +59,11 @@ func Run() error {
 		return err
 	}
 
+	// -dオプションが有効な場合、Optionsの内容を出力
+	if options.Debug {
+		logger.Debug("現在のオプション内容:\n%s", options.String())
+	}
+
 	// 会話履歴の読み込み
 	conversationHistory, err := LoadConversationHistory(options.HistoryFile)
 	if err != nil {

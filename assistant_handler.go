@@ -87,6 +87,7 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 // optionsにはユーザーが入力したメッセージやその他の設定が含まれます。
 // アシスタントの応答が表示され, エラーが発生した場合はその内容が返されます。
 func chatWithAssistant(client *openai.Client, assistantID string, options Options) error {
+	logger.Info("chatWithAssistantです:\nassistantID: %s\nUserMassage: %s\n", assistantID, options.UserMessage)
 	ctx := context.Background()
 
 	// アシスタントの取得
