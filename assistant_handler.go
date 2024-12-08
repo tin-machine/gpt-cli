@@ -51,7 +51,7 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 	}
 
 	assistantRequest := openai.AssistantRequest{
-		Name:         &options.AssistantName,
+		Name:         StringPtr(options.AssistantName),
 		Description:  &options.AssistantDescription,
 		Model:        options.Model,
 		Instructions: &options.Instruction,
@@ -244,7 +244,7 @@ func handleCreateAssistant(client *openai.Client, options Options, config Config
 	}
 
 	assistantID, err := createNewAssistant(client, Options{
-		AssistantName:        assistantConfig.Name,
+		AssistantName:        options.AssistantName,
 		AssistantDescription: assistantConfig.Description,
 		Model:                assistantConfig.Model,
 		Instruction:          assistantConfig.Instruction,
