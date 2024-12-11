@@ -124,18 +124,12 @@ gpt-cli --create-assistant --assistant-name "MyAssistant" --assistant-descriptio
 gpt-cli --create-assistant  --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
 ```
 
-- **アシスタントと対話する例**:
-
-```bash
-gpt-cli --assistant-id "assistant_id" --message "こんにちは！"
-```
-
 - アシスタントの設定をconfig.yamlで行う:
 
 config.yamlからassistantsの設定を探してアシスタントを操作する
 
 ```
-gpt-cli -a myassistant1
+gpt-cli -assistant-name myassistant1
 ```
 
 config.yamlの設定は下記の通り:
