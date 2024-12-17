@@ -78,10 +78,18 @@ func Run() error {
 
 	// アシスタントの作成または取得
 	if options.AssistantName != "" {
-		// アシスタントを作成または取得
-		err := handleCreateAssistant(client, options, config)
+		// アシスタントを取得
+		// assistant := GetAssistantInstance()
+		// fmt.Println("アシスタントの名前:", assistant.Name)
+
+		// // アシスタントを作成または取得
+		// err := handleCreateAssistant(client, options, config)
+		// if err != nil {
+		// 	return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+		// }
+		assistant, err := GetAssistantInstance(client)
 		if err != nil {
-			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+			log.Fatalf("アシスタントの取得エラー: %v", err)
 		}
 
 		// アシスタントとの対話を開始

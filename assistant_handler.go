@@ -9,6 +9,19 @@ import (
 	"strings"
 )
 
+// Assistant 構造体を定義
+type Assistant struct {
+	Name             string
+	ConversationHist []string
+	Config           *Config
+	State            map[string]interface{}
+}
+
+// // Assistant 構造体を定義
+// type Assistant struct {
+//     Name string
+// }
+
 // StringPtrは、渡された文字列をポインタ型（*string）に変換して返します。
 // これにより、他の関数で文字列を参照できるようになります。
 func StringPtr(s string) *string {
@@ -375,4 +388,64 @@ func GetAssistantIDByName(client *openai.Client, name string) (string, error) {
 	//   }
 	// }
 	// return "", fmt.Errorf("指定された名前のアシスタントが見つかりませんでした: %s", name)
+}
+
+// var assistantInstance *Assistant
+
+// func GetAssistantInstance() *Assistant {
+//     if assistantInstance == nil {
+//         assistantInstance = &Assistant{
+//             Name: "あなたのアシスタント",
+//             // 他のフィールドを初期化
+//         }
+//         fmt.Println("新しいアシスタントを作成しました。")
+//     }
+//     return assistantInstance
+// }
+
+// シングルトンのアシスタントインスタンス
+var assistantInstance *openai.Assistant
+
+// GetAssistantInstance は OpenAI API を使用してアシスタントを取得または作成します
+func GetAssistantInstance(client *openai.Client) (*openai.Assistant, error) {
+	if assistantInstance != nil {
+		return assistantInstance, nil
+	}
+
+	// 1. アシスタントの一覧を取得
+	limit := 100 // 必要に応じて調整
+	assistantsList, err := client.ListAssistants(context.Background(), &limit, nil, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("アシスタントの一覧取得エラー: %v", err)
+	}
+
+	// 2. 特定のアシスタントを検索（例として名前で検索）
+	assistantName := "あなたのアシスタント" // 目的のアシスタントの名前
+	for _, assistant := range assistantsList.Assistants {
+		if assistant.Name != nil && *assistant.Name == assistantName {
+			fmt.Printf("既存のアシスタントを使用します: %s\n", *assistant.Name)
+			assistantInstance = &assistant
+			return assistantInstance, nil
+		}
+	}
+	// 3. アシスタントが存在しない場合は新しく作成
+	assistantDescription := "これはあなた専用のアシスタントです。"
+	assistantInstructions := "あなたは親切なアシスタントです。ユーザーの質問に丁寧に答えてください。"
+
+	assistantRequest := openai.AssistantRequest{
+		Name:         &assistantName,
+		Description:  &assistantDescription,
+		Model:        openai.GPT4, // 使用するモデルを指定
+		Instructions: &assistantInstructions,
+		// 必要に応じて他のフィールドを設定
+	}
+
+	assistant, err := client.CreateAssistant(context.Background(), assistantRequest)
+	if err != nil {
+		return nil, fmt.Errorf("アシスタントの作成エラー: %v", err)
+	}
+
+	fmt.Printf("新しいアシスタントを作成しました: %s\n", assistant.ID)
+	assistantInstance = &assistant
+	return assistantInstance, nil
 }
