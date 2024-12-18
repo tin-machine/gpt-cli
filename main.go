@@ -87,18 +87,30 @@ func Run() error {
 		// if err != nil {
 		// 	return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
 		// }
-		assistant, err := GetAssistantInstance(client)
-		if err != nil {
-			log.Fatalf("アシスタントの取得エラー: %v", err)
-		}
+		// assistant, err := GetAssistantInstance(client)
+		// if err != nil {
+		// 	log.Fatalf("アシスタントの取得エラー: %v", err)
+		// }
 
-		// アシスタントとの対話を開始
-		err = handleAssistantInteraction(client, options)
-		if err != nil {
-			return fmt.Errorf("アシスタントとの対話に失敗しました: %v", err)
-		}
+		// // アシスタントとの対話を開始
+		// err = handleAssistantInteraction(client, options)
+		// if err != nil {
+		// 	return fmt.Errorf("アシスタントとの対話に失敗しました: %v", err)
+		// }
 
-		return nil
+		// return nil
+
+		// // アシスタントの取得または作成
+    // assistant, err := GetAssistantInstance(client)
+    // if err != nil {
+    //     log.Fatalf("アシスタントの取得エラー: %v", err)
+    // }
+
+    // アシスタントとの対話を開始
+    err = handleAssistantInteraction(client, options)
+    if err != nil {
+        log.Fatalf("対話中のエラー: %v", err)
+    }
 	}
 
 	// アシスタントの作成
