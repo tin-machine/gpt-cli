@@ -30,7 +30,6 @@ type VectorStoreConfig struct {
 }
 
 type AssistantConfig struct {
-	Name            string  `yaml:"name"`
 	Description     string  `yaml:"description"`
 	Model           string  `yaml:"model"`
 	Instruction     string  `yaml:"instruction"`
@@ -48,6 +47,8 @@ type Config struct {
 	Prompts      map[string]Prompt            `yaml:"prompts"`
 	VectorStores map[string]VectorStoreConfig `yaml:"vectorStores"`
 	Assistants   map[string]AssistantConfig   `yaml:"assistants"`
+	Language     string
+	Style        string
 }
 
 // LoadConfigは、指定されたファイルパスから設定を読み込む関数です。

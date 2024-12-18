@@ -9,6 +9,19 @@ import (
 	"strings"
 )
 
+// Assistant 構造体を定義
+type Assistant struct {
+	Name             string
+	ConversationHist []string
+	Config           *Config
+	State            map[string]interface{}
+}
+
+// // Assistant 構造体を定義
+// type Assistant struct {
+//     Name string
+// }
+
 // StringPtrは、渡された文字列をポインタ型（*string）に変換して返します。
 // これにより、他の関数で文字列を参照できるようになります。
 func StringPtr(s string) *string {
@@ -51,7 +64,7 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 	}
 
 	assistantRequest := openai.AssistantRequest{
-		Name:         &options.AssistantName,
+		Name:         StringPtr(options.AssistantName),
 		Description:  &options.AssistantDescription,
 		Model:        options.Model,
 		Instructions: &options.Instruction,
@@ -87,6 +100,7 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 // optionsにはユーザーが入力したメッセージやその他の設定が含まれます。
 // アシスタントの応答が表示され, エラーが発生した場合はその内容が返されます。
 func chatWithAssistant(client *openai.Client, assistantID string, options Options) error {
+	logger.Info("chatWithAssistantです:\nassistantID: %s\nUserMassage: %s\n", assistantID, options.UserMessage)
 	ctx := context.Background()
 
 	// アシスタントの取得
@@ -235,13 +249,15 @@ func interactiveChatWithAssistant(client *openai.Client, assistantID string, opt
 }
 
 func handleCreateAssistant(client *openai.Client, options Options, config Config) error {
-	assistantConfig, ok := config.Assistants[options.AssistantOption] // 例えば、コマンドラインオプションとして指定されたassistant名を使う場合
+	assistantConfig, ok := config.Assistants[options.AssistantName] // 例えば、コマンドラインオプションとして指定されたassistant名を使う場合
+	logger.Debug("handleCreateAssistantです、options.AssistantName:\n%s", options.AssistantName)
+	logger.Debug("handleCreateAssistantです、config.Assistants:\n%s", config.Assistants)
 	if !ok {
-		return fmt.Errorf("指定されたアシスタントの設定が見つかりません: %s", options.PromptOption)
+		return fmt.Errorf("指定されたアシスタントの設定が見つかりません: %s", options.AssistantName)
 	}
 
 	assistantID, err := createNewAssistant(client, Options{
-		AssistantName:        assistantConfig.Name,
+		AssistantName:        options.AssistantName,
 		AssistantDescription: assistantConfig.Description,
 		Model:                assistantConfig.Model,
 		Instruction:          assistantConfig.Instruction,
@@ -273,19 +289,163 @@ func handleCreateAssistant(client *openai.Client, options Options, config Config
 // clientはOpenAI APIクライアント、optionsにはユーザーの入力や設定が含まれます。
 // いずれかの操作の実行中にエラーが発生した場合は、その内容が返されます。
 func handleAssistantInteraction(client *openai.Client, options Options) error {
-	if options.Message != "" {
+	var assistantID string
+	if options.AssistantID != "" {
+		assistantID = options.AssistantID
+	} else if options.AssistantName != "" {
+		logger.Debug("handleAssistantInteractionです、AssistantName:\n%s", options.AssistantName)
+		id, err := GetAssistantIDByName(client, options.AssistantName)
+		if err != nil {
+			return err
+		}
+		assistantID = id
+	} else {
+		return fmt.Errorf("アシスタントのIDまたは名前を指定してください (--assistant-id または --assistant-name)")
+	}
+
+	// options.Messageをoptions.UserMessageに変更
+	if options.UserMessage != "" {
 		// 単一のメッセージを送信
-		err := chatWithAssistant(client, options.AssistantID, options)
+		options.AssistantID = assistantID
+		err := chatWithAssistant(client, assistantID, options)
+		logger.Debug("handleAssistantInteractionです、options.UserMessage:\n%s", options.UserMessage)
 		if err != nil {
 			return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
 		}
 		return nil
 	} else {
 		// 対話モードを開始
-		err := interactiveChatWithAssistant(client, options.AssistantID, options)
+		options.AssistantID = assistantID
+		err := interactiveChatWithAssistant(client, assistantID, options)
 		if err != nil {
 			return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
 		}
 		return nil
 	}
+
+	// if options.Message != "" {
+	// 	// 単一のメッセージを送信
+	// 	err := chatWithAssistant(client, options.AssistantID, options)
+	// 	if err != nil {
+	// 		return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
+	// 	}
+	// 	return nil
+	// } else {
+	// 	// 対話モードを開始
+	// 	err := interactiveChatWithAssistant(client, options.AssistantID, options)
+	// 	if err != nil {
+	// 		return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
+	// 	}
+	// 	return nil
+	// }
+}
+
+// GetAssistantIDByName は指定された名前のアシスタントのIDを取得します
+func GetAssistantIDByName(client *openai.Client, name string) (string, error) {
+	ctx := context.Background()
+
+	// ページネーションのパラメータを初期化
+	limit := 100 // 一度に取得するアシスタントの数
+	var order *string = nil
+	var after *string = nil
+	var before *string = nil
+
+	for {
+		// アシスタント一覧を取得
+		assistantsList, err := client.ListAssistants(ctx, &limit, order, after, before)
+		if err != nil {
+			return "", fmt.Errorf("アシスタント一覧の取得に失敗しました: %w", err)
+		}
+
+		// 名前が一致するアシスタントを検索
+		for _, assistant := range assistantsList.Assistants {
+			if assistant.Name != nil && *assistant.Name == name {
+				return assistant.ID, nil
+			}
+		}
+
+		// 次のページがあるか確認
+		if assistantsList.HasMore && assistantsList.LastID != nil {
+			after = assistantsList.LastID
+		} else {
+			// すべてのアシスタントを検索済み
+			break
+		}
+	}
+
+	return "", fmt.Errorf("指定された名前のアシスタントが見つかりませんでした: %s", name)
+
+	// // アシスタント一覧を取得
+	// assistants, err := client.ListAssistants(ctx, openai.Pagination{})
+	// if err != nil {
+	//   return "", fmt.Errorf("アシスタント一覧の取得に失敗しました: %w", err)
+	// }
+
+	// // 名前が一致するアシスタントを検索
+	// for _, assistant := range assistants.Assistants {
+	//   if assistant.Name != nil && *assistant.Name == name {
+	//     return assistant.ID, nil
+	//   }
+	// }
+	// return "", fmt.Errorf("指定された名前のアシスタントが見つかりませんでした: %s", name)
+}
+
+// var assistantInstance *Assistant
+
+// func GetAssistantInstance() *Assistant {
+//     if assistantInstance == nil {
+//         assistantInstance = &Assistant{
+//             Name: "あなたのアシスタント",
+//             // 他のフィールドを初期化
+//         }
+//         fmt.Println("新しいアシスタントを作成しました。")
+//     }
+//     return assistantInstance
+// }
+
+// シングルトンのアシスタントインスタンス
+var assistantInstance *openai.Assistant
+
+// GetAssistantInstance は OpenAI API を使用してアシスタントを取得または作成します
+func GetAssistantInstance(client *openai.Client) (*openai.Assistant, error) {
+	if assistantInstance != nil {
+		return assistantInstance, nil
+	}
+
+	// 1. アシスタントの一覧を取得
+	limit := 100 // 必要に応じて調整
+	assistantsList, err := client.ListAssistants(context.Background(), &limit, nil, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("アシスタントの一覧取得エラー: %v", err)
+	}
+
+	// 2. 特定のアシスタントを検索（例として名前で検索）
+	assistantName := "あなたのアシスタント" // 目的のアシスタントの名前
+	for _, assistant := range assistantsList.Assistants {
+		if assistant.Name != nil && *assistant.Name == assistantName {
+			fmt.Printf("既存のアシスタントを使用します: %s\n", *assistant.Name)
+			assistantInstance = &assistant
+			return assistantInstance, nil
+		}
+	}
+	// 3. アシスタントが存在しない場合は新しく作成
+	assistantDescription := "これはあなた専用のアシスタントです。"
+	assistantInstructions := "あなたは親切なアシスタントです。ユーザーの質問に丁寧に答えてください。"
+
+	assistantRequest := openai.AssistantRequest{
+		Name:         &assistantName,
+		Description:  &assistantDescription,
+		Model:        openai.GPT4, // 使用するモデルを指定
+		Instructions: &assistantInstructions,
+		// 必要に応じて他のフィールドを設定
+	}
+
+	assistant, err := client.CreateAssistant(context.Background(), assistantRequest)
+	if err != nil {
+		return nil, fmt.Errorf("アシスタントの作成エラー: %v", err)
+	}
+
+	fmt.Printf("新しいアシスタントを作成しました: %s\n", assistant.ID)
+	assistantInstance = &assistant
+	return assistantInstance, nil
 }

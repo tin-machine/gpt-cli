@@ -59,6 +59,11 @@ func Run() error {
 		return err
 	}
 
+	// -dオプションが有効な場合、Optionsの内容を出力
+	if options.Debug {
+		logger.Debug("現在のオプション内容:\n%s", options.String())
+	}
+
 	// 会話履歴の読み込み
 	conversationHistory, err := LoadConversationHistory(options.HistoryFile)
 	if err != nil {
@@ -72,20 +77,40 @@ func Run() error {
 	}
 
 	// アシスタントの作成または取得
-	if options.AssistantOption != "" {
-		// アシスタントを作成または取得
-		err := handleCreateAssistant(client, options, config)
-		if err != nil {
-			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
-		}
+	if options.AssistantName != "" {
+		// アシスタントを取得
+		// assistant := GetAssistantInstance()
+		// fmt.Println("アシスタントの名前:", assistant.Name)
 
-		// アシスタントとの対話を開始
-		err = handleAssistantInteraction(client, options)
-		if err != nil {
-			return fmt.Errorf("アシスタントとの対話に失敗しました: %v", err)
-		}
+		// // アシスタントを作成または取得
+		// err := handleCreateAssistant(client, options, config)
+		// if err != nil {
+		// 	return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+		// }
+		// assistant, err := GetAssistantInstance(client)
+		// if err != nil {
+		// 	log.Fatalf("アシスタントの取得エラー: %v", err)
+		// }
 
-		return nil
+		// // アシスタントとの対話を開始
+		// err = handleAssistantInteraction(client, options)
+		// if err != nil {
+		// 	return fmt.Errorf("アシスタントとの対話に失敗しました: %v", err)
+		// }
+
+		// return nil
+
+		// // アシスタントの取得または作成
+    // assistant, err := GetAssistantInstance(client)
+    // if err != nil {
+    //     log.Fatalf("アシスタントの取得エラー: %v", err)
+    // }
+
+    // アシスタントとの対話を開始
+    err = handleAssistantInteraction(client, options)
+    if err != nil {
+        log.Fatalf("対話中のエラー: %v", err)
+    }
 	}
 
 	// アシスタントの作成
