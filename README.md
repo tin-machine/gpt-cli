@@ -198,11 +198,12 @@ autoSaveLogsがtrueでlogDirを指定しない場合、[環境変数XDG_DATA_HOM
 この保存ファイル名は-histroyで指定したファイル名で変更できます。会話の文脈を繋げたい場合は -history で指定した方が会話が繋がります。
 
 ```
-autoSaveLogs: true # 自動的に会話ログを保存するか
 # logDir: "<会話ログを保存するディレクトリ>"
+autoSaveLogs: true # 自動的に会話ログを保存するか
 prompts:
   prompt1:
     model: gpt-4o
+    maxTokens: 16384
     system: |
       "深呼吸し順番にゆっくり考えてみてください。出力するの最終的なものだけにしてください(途中の考えてほしい段階は出力しないでください)"
       "次の文章はランダムなタスクになっています。文章すべて最後まで読み込み"
