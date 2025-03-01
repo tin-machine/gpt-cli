@@ -56,6 +56,9 @@ gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何�
 
 ## Assistant APIを使う
 
+OpenAIの管理画面のStorageでは[File]と[Vector store]という機能があります。
+ChatGPTのAssistant APIを使う際には、これらの機能を使ってファイルをアップロードし、ベクトルストアに追加する必要があります。
+
 - **ファイルをアップロードする例**:
 
 ```bash
@@ -81,6 +84,7 @@ gpt-cli --vector-store-name "my_vector_store" --vector-store-action create
   - add-file
 
 - **ベクトルストア作って中にファイルを追加する例**:
+ファイルをアップロードしてからVectore storesに自動的に入れる場合
 
 ```bash
 gpt-cli --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
@@ -121,7 +125,7 @@ gpt-cli --create-assistant --assistant-name "MyAssistant" --assistant-descriptio
 - アシスタント作成時、vectore-storeにアップロードしたファイルを追加する例:
 
 ```bash
-gpt-cli --create-assistant  --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
+gpt-cli --create-assistant --assistant-name "MyAssistant" --upload-and-add-to-vector '*.go' --vector-store-name "my_vector_store"
 ```
 
 - **アシスタントと対話する例**:
