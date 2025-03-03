@@ -90,6 +90,36 @@ func UploadFiles(client *openai.Client, filePaths []string, purpose string) ([]s
 	return fileIDs, nil
 }
 
+// WaitForVectorStoreReady は、指定した Vector Store の状態が "ready" になるまでポーリングします。
+func WaitForVectorStoreReady(client *openai.Client, vectorStoreID string, timeout time.Duration) error {
+	ctx := context.Background()
+	startTime := time.Now()
+
+	for {
+		// Vector Store の状態を取得
+		vs, err := client.RetrieveVectorStore(ctx, vectorStoreID)
+		if err != nil {
+			return fmt.Errorf("ベクトルストアの取得に失敗しました: %w", err)
+		}
+
+		// 状態を表示
+		fmt.Printf("現在の状態: %s\n", vs.Status)
+
+		// 状態が "ready" なら完了
+		if vs.Status == "completed" {
+			return nil
+		}
+
+		// タイムアウトチェック
+		if time.Since(startTime) > timeout {
+			return fmt.Errorf("タイムアウト: %s 内に Vector Store が ready になりませんでした", timeout)
+		}
+
+		// 少し待ってから再度確認
+		time.Sleep(5 * time.Second)
+	}
+}
+
 // handleUploadAndAddFilesは、ユーザー指定のファイルをOpenAIにアップロードし、そのファイルをベクトルストアに追加します。
 // 引数clientはOpenAI APIクライアント、optionsにはアップロード対象のファイルや追加に関する設定が含まれます。
 // 成功した場合は、アップロード結果の詳細が表示され、エラーが発生した場合はエラーメッセージが返されます。
@@ -117,9 +147,17 @@ func handleUploadAndAddFiles(client *openai.Client, options Options) error {
 		return err
 	}
 	fmt.Printf("ファイルをベクトルストアに追加しました: VectorStoreID=%s\n", vectorStore.ID)
+	// time.Sleep(120 * time.Second) // 120秒待機
+	// 最大 2 分間待機する例
+	if err := WaitForVectorStoreReady(client, vectorStore.ID, 15*time.Second); err != nil {
+		fmt.Printf("エラー: %v\n", err)
+	} else {
+		fmt.Println("Vector Store は ready です！")
+	}
 
 	return nil // 処理が完了したので終了
 }
+
 func handleUploadFile(client *openai.Client, options Options) error {
 	// ファイルの存在チェックはUploadFile関数内で行われています
 	// UploadFile 関数を呼び出す
