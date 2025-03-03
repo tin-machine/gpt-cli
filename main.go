@@ -71,31 +71,6 @@ func Run() error {
 		return err
 	}
 
-	// アシスタントの作成または取得
-	if options.AssistantOption != "" {
-		// アシスタントを作成または取得
-		err := handleCreateAssistant(client, options, config)
-		if err != nil {
-			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
-		}
-
-		// アシスタントとの対話を開始
-		err = handleAssistantInteraction(client, options)
-		if err != nil {
-			return fmt.Errorf("アシスタントとの対話に失敗しました: %v", err)
-		}
-
-		return nil
-	}
-
-	// アシスタントの作成
-	if options.CreateAssistant {
-		err := handleCreateAssistant(client, options, config)
-		if err != nil {
-			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
-		}
-	}
-
 	// ファイルアップロードとベクトルストア追加
 	if len(options.UploadAndAddFiles) > 0 {
 		err := handleUploadAndAddFiles(client, options)
@@ -111,6 +86,32 @@ func Run() error {
 			return fmt.Errorf("ファイルのアップロードまたは追加に失敗しました: %v", err)
 		}
 	}
+
+	// アシスタントの作成または取得
+	// AssistantOption( -aオプションが)指定されている場合、アシスタントを作成または取得
+	if options.AssistantName != "" {
+		// アシスタントを作成または取得
+		err := handleCreateAssistant(client, options, config)
+		if err != nil {
+			return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+		}
+
+		// アシスタントとの対話を開始
+		err = handleAssistantInteraction(client, options)
+		if err != nil {
+			return fmt.Errorf("アシスタントとの対話に失敗しました: %v", err)
+		}
+
+		return nil
+	}
+
+	// // アシスタントの作成
+	// if options.CreateAssistant {
+	// 	err := handleCreateAssistant(client, options, config)
+	// 	if err != nil {
+	// 		return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
+	// 	}
+	// }
 
 	// 他のオプションに応じた処理
 	if options.UploadFilePath != "" {
