@@ -69,7 +69,6 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.ConfigPath, "c", "", "設定ファイルのパスを指定")
 	flag.StringVar(&options.Model, "model", "gpt-4o-mini", "使用するモデルを指定")
 	flag.BoolVar(&options.ShowVersion, "version", false, "バージョン情報を表示")
-	flag.BoolVar(&options.CollectFiles, "collect", false, "現在のディレクトリ内のファイルをUserメッセージに追加")
 	flag.StringVar(&options.HistoryFile, "history", "", "会話履歴の保存ファイルを指定（拡張子は不要）")
 	flag.IntVar(&options.Timeout, "t", 60, "タイムアウト時間（秒）を指定")
 	flag.StringVar(&options.FileList, "f", "", "読み込むファイルのパスをカンマ区切りで指定")
