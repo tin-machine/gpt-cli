@@ -21,6 +21,7 @@ type OpenAIClient interface {
 // 引数clientはOpenAI APIのクライアント、filePathはアップロードするファイルのパス、purposeはファイルの用途です。
 // 成功した場合はアップロードされたファイルの情報を含むopenai.File構造体が返されます。
 // エラーが発生した場合は、そのエラーメッセージが返されます。
+// この関数はUploadFiles関数(複数ファイルをアップロードする)から利用されています
 func UploadFile(client OpenAIClient, filePath string, purpose string) (*openai.File, error) {
 	ctx := context.Background()
 
