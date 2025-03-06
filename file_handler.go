@@ -105,7 +105,7 @@ func WaitForVectorStoreReady(client *openai.Client, vectorStoreID string, timeou
 		// 状態を表示
 		fmt.Printf("現在の状態: %s\n", vs.Status)
 
-		// 状態が "ready" なら完了
+		// 状態が "completed" なら完了
 		if vs.Status == "completed" {
 			return nil
 		}
