@@ -68,7 +68,7 @@ gpt-cli -p prompt4 -history gpt-cli改修 -f main.go,config.go,utils.go -u "何�
 
 ## Assistant APIを使う
 
-ChatGPTのAssistant APIからファイルを扱う場合、一旦、ファイルをStorage->Fileにアップロードし、更にStorage->Vectore storesにに追加する必要があります。
+ChatGPTのAssistant APIからファイルを検索したい場合、一旦、ファイルをStorage->Fileにアップロードし、更にStorage->Vectore storesにに追加する必要があります。
 
 コストがかかります。 最初の1GBはフリーですが、それ以降は$0.1/MBです。
 [料金](https://openai.com/pricing)のAssistant API を参照
@@ -99,7 +99,7 @@ gpt-cli --assistant-id "assistant_id" --message "こんにちは！"
 ファイルをアップロード
 
 ```
-gpt-cli --upload-file <ファイルのパス> 
+gpt-cli --upload-file <ファイルのパス>
 ```
 
 ファイルをStorage->Filesから削除する例:
