@@ -105,14 +105,6 @@ func Run() error {
 		return nil
 	}
 
-	// // アシスタントの作成
-	// if options.CreateAssistant {
-	// 	err := handleCreateAssistant(client, options, config)
-	// 	if err != nil {
-	// 		return fmt.Errorf("アシスタントの作成に失敗しました: %v", err)
-	// 	}
-	// }
-
 	// 他のオプションに応じた処理
 	if options.UploadFilePath != "" {
 		err := handleUploadFile(client, options)
@@ -144,7 +136,8 @@ func Run() error {
 	}
 
 	// デフォルトプロンプトを設定
-	if promptConfig.System == "" && promptConfig.User == "" {
+	logger.Debug("現在のオプション内容:\n%s", options.String())
+	if promptConfig.System == "" && promptConfig.User == "" && options.PromptOption != "" {
 		promptConfig = GetDefaultPromptConfig()
 	}
 
