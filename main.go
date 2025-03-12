@@ -137,7 +137,7 @@ func Run() error {
 
 	// デフォルトプロンプトを設定
 	logger.Debug("現在のオプション内容:\n%s", options.String())
-	if promptConfig.System == "" && promptConfig.User == "" && options.PromptOption != "" {
+	if promptConfig.System == "" && promptConfig.User == "" {
 		promptConfig = GetDefaultPromptConfig()
 	}
 
@@ -159,7 +159,7 @@ func Run() error {
 	conversationHistory = append(conversationHistory, messages...)
 
 	// OpenAI API へのリクエスト
-	if options.UserMessage != "" {
+	if options.UserMessage != "" || promptConfig.User != "" {
 		return handleChatCompletion(client, promptConfig, conversationHistory, options)
 	}
 

@@ -86,7 +86,7 @@ func ParseCommandLineArgs() (Options, error) {
 	flag.StringVar(&options.DeleteFileName, "delete-file", "", "削除するファイルの名前を指定（ワイルドカード対応）")
 	flag.StringVar(&options.UploadAndAddFilesStr, "upload-and-add-to-vector", "", "アップロードするファイルのパスをカンマ区切りで指定し、自動的にベクトルストアに追加")
 	flag.StringVar(&options.AssistantID, "assistant-id", "", "操作するアシスタントのIDを指定")
-	flag.StringVar(&options.AssistantName, "assistant-name", "MyAssistant", "アシスタントの名前を指定")
+	flag.StringVar(&options.AssistantName, "assistant-name", "", "アシスタントの名前を指定")
 	flag.StringVar(&options.AssistantDescription, "assistant-description", "これはアシスタントの説明です。", "アシスタントの説明を指定")
 	flag.StringVar(&options.AssistantOption, "a", "", "config.yamlにあるアシスタントを選択")
 	flag.StringVar(&options.Instruction, "instruction", "あなたはユーザーを助けるアシスタントです。", "アシスタントへの指示を指定")
