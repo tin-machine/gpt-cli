@@ -26,6 +26,7 @@ func (m *MockOpenAIClient) RetrieveAssistant(ctx context.Context, assistantID st
 	}, nil
 }
 
+// チャットの補完（応答生成）を行うメソッドです。モックでは、固定の応答メッセージを返します。
 func (m *MockOpenAIClient) CreateChatCompletion(ctx context.Context, req openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 	return &openai.ChatCompletionResponse{
 		Choices: []openai.ChatCompletionChoice{
