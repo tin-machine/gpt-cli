@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -73,7 +74,9 @@ func LoadConfig(filePath string) (Config, error) {
 	}
 
 	// YAMLファイルをパース
-	err = yaml.UnmarshalStrict(yamlFile, &config)
+	decoder := yaml.NewDecoder(bytes.NewReader(yamlFile))
+	decoder.KnownFields(true)
+	err = decoder.Decode(&config)
 	if err != nil {
 		return config, fmt.Errorf("設定ファイルの解析に失敗しました (%s): %w", cleanPath, err)
 	}
