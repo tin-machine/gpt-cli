@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// LoadConfigurationは、指定されたパスから設定ファイルを読み込み、内容をConfig構造体に格納します。
+// LoadConfiguration は、指定されたパスから設定ファイルを読み込み、内容をConfig構造体に格納します。
 // 設定ファイルが存在しない場合や読み込みに失敗した場合は、デフォルト設定を返します。
 // 引数configPathは設定ファイルのパスを指します。
 func LoadConfiguration(configPath string) (Config, error) {
@@ -35,7 +35,7 @@ func LoadConfiguration(configPath string) (Config, error) {
 	return config, nil
 }
 
-// GetConfigFilePathは、設定ファイルのパスを取得するための関数です。
+// GetConfigFilePath は、設定ファイルのパスを取得するための関数です。
 // 引数configPathに指定されたパスを優先して使用し、指定がない場合は環境変数やデフォルトパスから取得します。
 // 成功した場合は設定ファイルのパスを返し、エラーが発生した場合はエラーメッセージが返されます。
 func GetConfigFilePath(configPath string) (string, error) {

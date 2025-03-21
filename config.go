@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Promptはプロンプト設定の構造体で、以下のフィールドを含みます:
+// Prompt はプロンプト設定の構造体で、以下のフィールドを含みます:
 // - Model: 使用するAIモデル名
 // - System: システムメッセージ（アシスタントへの指示）
 // - User: ユーザーからのメッセージ
@@ -39,7 +39,7 @@ type AssistantConfig struct {
 	VectorStoreName string  `yaml:"vectorStoreName"`
 }
 
-// Configはアプリケーション全体の設定を保持するための構造体で、以下のフィールドを含みます:
+// Config はアプリケーション全体の設定を保持するための構造体で、以下のフィールドを含みます:
 // - LogDir: ログファイルを保存するディレクトリ
 // - AutoSaveLogs: ログの自動保存を有効にするかどうか
 // - Prompts: プロンプト名とその内容のマッピング
@@ -51,7 +51,7 @@ type Config struct {
 	Assistants   map[string]AssistantConfig   `yaml:"assistants"`
 }
 
-// LoadConfigは、指定されたファイルパスから設定を読み込む関数です。
+// LoadConfig は、指定されたファイルパスから設定を読み込む関数です。
 // 設定ファイルがYAML形式であり、内容がConfig構造体にマッピングされます。
 // 引数filePathは設定ファイルの場所を指します。
 // 成功すると、読み込まれたConfigが返され、読み込みに失敗した場合はエラーメッセージが返されます。

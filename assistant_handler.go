@@ -10,19 +10,19 @@ import (
 	"time"
 )
 
-// StringPtrは、渡された文字列をポインタ型（*string）に変換して返します。
+// StringPtr は、渡された文字列をポインタ型（*string）に変換して返します。
 // これにより、他の関数で文字列を参照できるようになります。
 func StringPtr(s string) *string {
 	return &s
 }
 
-// Float32Ptrは、渡されたfloat32値をポインタ型（*float32）に変換して返します。
+// Float32Ptr は、渡されたfloat32値をポインタ型（*float32）に変換して返します。
 // これにより、他の関数でfloat32を参照できるようになります。
 func Float32Ptr(f float32) *float32 {
 	return &f
 }
 
-// createNewAssistantは、新しいアシスタントを作成します。
+// createNewAssistant は、新しいアシスタントを作成します。
 // この関数は、指定されたオプションを使用してアシスタントの名前、説明、モデル、およびその他の設定を定義します。
 // clientはOpenAI APIクライアントであり、Options構造体にはアシスタントのための設定が含まれます。
 // アシスタントが正常に作成されると、そのアシスタントのIDを返します。
@@ -90,7 +90,7 @@ func createNewAssistant(client *openai.Client, options Options) (string, error) 
 	return assistant.ID, nil
 }
 
-// chatWithAssistantは、指定されたアシスタントに対してユーザーからのメッセージを送信し、アシスタントの応答を表示します。
+// chatWithAssistant は、指定されたアシスタントに対してユーザーからのメッセージを送信し、アシスタントの応答を表示します。
 // clientはOpenAI APIクライアント、assistantIDは対象のアシスタントのIDを示します。
 // optionsにはユーザーが入力したメッセージやその他の設定が含まれます。
 // アシスタントの応答が表示され, エラーが発生した場合はその内容が返されます。
@@ -142,7 +142,7 @@ func chatWithAssistant(client *openai.Client, assistantID string, options Option
 	return nil
 }
 
-// interactiveChatWithAssistantは、指定されたアシスタントとのインタラクティブな対話を開始します。
+// interactiveChatWithAssistant は、指定されたアシスタントとのインタラクティブな対話を開始します。
 // ユーザーが標準入力からメッセージを入力すると、アシスタントに送信され、その応答が表示されます。
 // パラメータとしてclinetはOpenAI APIクライアント、assistantIDは対象のアシスタントのID、およびoptionsは設定が含まれます。
 // ユーザーが“exit”と入力するまで会話は続きます。
@@ -314,7 +314,7 @@ func handleCreateAssistant(client *openai.Client, options Options, config Config
 	return nil
 }
 
-// handleAssistantInteractionは、アシスタントとのインタラクションを処理します。
+// handleAssistantInteraction は、アシスタントとのインタラクションを処理します。
 // この関数では、ユーザーが送信したメッセージの有無に応じて、アシスタントとの単発チャットまたはインタラクティブなあるいは対話モードを開始します。
 // clientはOpenAI APIクライアント、optionsにはユーザーの入力や設定が含まれます。
 // いずれかの操作の実行中にエラーが発生した場合は、その内容が返されます。
@@ -356,12 +356,12 @@ func handleAssistantInteraction(client *openai.Client, options Options) error {
 			return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
 		}
 		return nil
-	} else {
-		// 対話モードを開始
-		err := interactiveChatWithAssistant(client, assistantID, options)
-		if err != nil {
-			return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
-		}
-		return nil
 	}
+
+	// 対話モードを開始
+	err := interactiveChatWithAssistant(client, assistantID, options)
+	if err != nil {
+		return fmt.Errorf("アシスタントとのチャットに失敗しました: %v", err)
+	}
+	return nil
 }
