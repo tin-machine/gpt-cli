@@ -2,7 +2,7 @@ module github.com/tin-machine/gpt-cli
 
 go 1.23.0
 
-toolchain go1.24.1
+toolchain go1.24.4
 
 require (
 	github.com/sashabaranov/go-openai v1.38.1
