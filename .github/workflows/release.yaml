@@ -64,7 +64,7 @@ jobs:
           git push origin main
 
       - name: リリース作成とバイナリ添付
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
 
       - name: リリースの作成
         env:
